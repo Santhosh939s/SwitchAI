@@ -79,6 +79,7 @@ export function ChatPage() {
   const [connectedProviders, setConnectedProviders] = useState<string[]>([]);
   const [input, setInput] = useState('');
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
+  const [disableRagLookup, setDisableRagLookup] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<string>('auto');
   const [selectedModel, setSelectedModel] = useState<string>('');
   const [routingPriority, setRoutingPriority] = useState<string>('balanced');
@@ -280,7 +281,7 @@ export function ChatPage() {
     setMessages((prev) => [...prev, tempUserMsg]);
 
     try {
-      const assistantMsg = await sendMessage(conv.id, currentText, selectedProvider, selectedModel || undefined, webSearchEnabled);
+      const assistantMsg = await sendMessage(conv.id, currentText, selectedProvider, selectedModel || undefined, webSearchEnabled, disableRagLookup);
       setMessages((prev) => [...prev.filter((m) => !m.id.startsWith('temp-')), tempUserMsg, assistantMsg]);
       await loadConversations(searchQuery);
       await loadPassport(conv.id);
@@ -676,7 +677,7 @@ export function ChatPage() {
               className="hidden"
               accept=".txt,.md,.json,.csv"
             />
-            <div className="absolute left-2.5 z-10 flex items-center space-x-1">
+            <div className="absolute left-2.5 z-10 flex items-center space-x-1.5">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
@@ -689,15 +690,29 @@ export function ChatPage() {
 
               <button
                 type="button"
+                onClick={() => setDisableRagLookup(!disableRagLookup)}
+                className={`px-2 py-1 rounded-lg text-[11px] font-medium border transition-colors flex items-center space-x-1 ${
+                  !disableRagLookup
+                    ? 'bg-purple-500/20 text-purple-300 border-purple-500/40'
+                    : 'bg-white/5 text-text-muted border-border hover:text-white'
+                }`}
+                title="Toggle RAG First Lookup (ON = 0 Cloud Token Cost / OFF = Cloud AI Only)"
+              >
+                <span>🧠 RAG</span>
+                <span className={`w-1.5 h-1.5 rounded-full ${!disableRagLookup ? 'bg-purple-400 animate-pulse' : 'bg-gray-500'}`} />
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setWebSearchEnabled(!webSearchEnabled)}
-                className={`px-2 py-1 rounded-lg text-xs font-medium border transition-colors flex items-center space-x-1 ${
+                className={`px-2 py-1 rounded-lg text-[11px] font-medium border transition-colors flex items-center space-x-1 ${
                   webSearchEnabled
                     ? 'bg-blue-500/20 text-blue-300 border-blue-500/40'
                     : 'bg-white/5 text-text-muted border-border hover:text-white'
                 }`}
-                title="Toggle 100% Free Live Web Search (DuckDuckGo)"
+                title="Toggle Live Web Search (DuckDuckGo)"
               >
-                <span>🌐</span>
+                <span>🌐 Web</span>
                 <span className={`w-1.5 h-1.5 rounded-full ${webSearchEnabled ? 'bg-blue-400 animate-pulse' : 'bg-gray-500'}`} />
               </button>
             </div>
@@ -717,7 +732,7 @@ export function ChatPage() {
                   ? 'Message in Auto Mode (Router classifies task & selects optimal model)...'
                   : `Message using ${ALL_PROVIDERS.find((p) => p.id === selectedProvider)?.name || selectedProvider}...`
               }
-              className="w-full py-3 pl-20 pr-24 rounded-xl bg-neutral-bg2 border border-border focus:border-brand focus:outline-none text-xs text-white placeholder-text-muted resize-none transition-colors"
+              className="w-full py-3 pl-36 pr-24 rounded-xl bg-neutral-bg2 border border-border focus:border-brand focus:outline-none text-xs text-white placeholder-text-muted resize-none transition-colors"
             />
             <button
               type="submit"

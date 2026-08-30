@@ -44,3 +44,4 @@ class MessageCreateRequest(BaseModel):
     provider: Optional[str] = None
     model: Optional[str] = None
     web_search_enabled: Optional[bool] = False
+    disable_rag_lookup: Optional[bool] = False

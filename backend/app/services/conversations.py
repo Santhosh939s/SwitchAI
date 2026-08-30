@@ -142,8 +142,8 @@ def send_message(db: Session, user_id: str, conversation_id: str, req: MessageCr
     # 3. RAG-First Lookup (Zero Token Waste): Check local RAG & Shared Memory before calling Cloud APIs
     rag_text, is_direct_match = query_rag_engine(db, conversation_id, req.content, context_package, web_results=web_results)
     
-    # If RAG has a direct grounded topic/web match and user did not explicitly force a specific cloud model
-    if is_direct_match and not req.provider and target_provider != "local":
+    # If RAG has a direct match, user did not disable RAG, and did not explicitly force a specific cloud model
+    if is_direct_match and not req.disable_rag_lookup and not req.provider and target_provider != "local":
         response = type('Response', (), {
             'content': rag_text,
             'provider': 'rag_engine',

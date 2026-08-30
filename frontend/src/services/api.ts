@@ -122,10 +122,10 @@ export async function getConversationMessages(conversationId: string) {
   return await apiRequest(`${API_BASE}/conversations/${conversationId}/messages`, { method: 'GET' });
 }
 
-export async function sendMessage(conversationId: string, content: string, provider?: string, model?: string, webSearchEnabled?: boolean) {
+export async function sendMessage(conversationId: string, content: string, provider?: string, model?: string, webSearchEnabled?: boolean, disableRagLookup?: boolean) {
   return await apiRequest(`${API_BASE}/conversations/${conversationId}/messages`, {
     method: 'POST',
-    body: JSON.stringify({ content, provider, model, web_search_enabled: webSearchEnabled }),
+    body: JSON.stringify({ content, provider, model, web_search_enabled: webSearchEnabled, disable_rag_lookup: disableRagLookup }),
   });
 }
 
