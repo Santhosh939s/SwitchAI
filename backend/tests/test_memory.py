@@ -102,7 +102,8 @@ def test_shared_memory_extraction_retrieval_and_provider_passthrough(auth_header
     assert resp.json()["is_pinned"] is True
 
     # 7. Delete memory
-    before_del_count = len(mems_after_extract)
+    resp = client.get(f"/api/conversations/{conv_id}/memory", headers=auth_headers)
+    before_del_count = len(resp.json())
     resp = client.delete(f"/api/memory/{mem_dec_id}", headers=auth_headers)
     assert resp.status_code == 200
 

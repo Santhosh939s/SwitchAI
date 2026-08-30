@@ -1,3 +1,4 @@
+import re
 import uuid
 import datetime
 from typing import List, Optional
@@ -5,8 +6,8 @@ from sqlalchemy.orm import Session
 from app.models.memory import Memory
 from app.models.conversation import Conversation
 from app.models.message import Message
-from app.schemas.memory import MemoryCreateRequest, MemoryUpdateRequest
 from app.models.file import File
+from app.schemas.memory import MemoryCreateRequest, MemoryUpdateRequest
 from app.schemas.context import ContextPackage, MemoryItem, MessageItem, ContextPassportResponse, FileContextItem
 
 VALID_CATEGORIES = [
@@ -82,12 +83,17 @@ def delete_memory(db: Session, memory_id: str) -> bool:
     return True
 
 def extract_and_store_memories_heuristic(db: Session, conversation_id: str, user_content: str, assistant_content: str):
+    """
+    RAG Memory Learning Engine:
+    Automatically parses every user turn & assistant response, extracting durable goals,
+    tech stack mentions, architectural decisions, and constraints into SQLite shared memory.
+    """
     text = (user_content + " " + assistant_content).strip()
     text_lower = text.lower()
 
     # Rule 1: Goal extraction
-    if "building" in text_lower or "creating" in text_lower or "goal is" in text_lower:
-        if "app" in text_lower or "platform" in text_lower or "service" in text_lower:
+    if any(k in text_lower for k in ["building", "creating", "goal", "target", "want to", "designing"]):
+        if any(k in text_lower for k in ["app", "platform", "service", "system", "project", "website"]):
             create_memory(db, conversation_id, MemoryCreateRequest(
                 category="goal",
                 key="Project Goal",
@@ -95,13 +101,16 @@ def extract_and_store_memories_heuristic(db: Session, conversation_id: str, user
                 is_pinned=True
             ))
 
-    # Rule 2: Stack & Fact extraction
+    # Rule 2: Stack & Tech Fact extraction
     stacks = []
     if "fastapi" in text_lower: stacks.append("FastAPI")
     if "postgresql" in text_lower or "postgres" in text_lower: stacks.append("PostgreSQL")
     if "react" in text_lower: stacks.append("React")
     if "python" in text_lower: stacks.append("Python")
-    if "node" in text_lower: stacks.append("Node.js")
+    if "node" in text_lower or "express" in text_lower: stacks.append("Node.js")
+    if "sqlite" in text_lower: stacks.append("SQLite")
+    if "tailwind" in text_lower: stacks.append("Tailwind CSS")
+    if "docker" in text_lower: stacks.append("Docker")
 
     if stacks:
         create_memory(db, conversation_id, MemoryCreateRequest(
@@ -112,14 +121,24 @@ def extract_and_store_memories_heuristic(db: Session, conversation_id: str, user
         ))
 
     # Rule 3: Decision extraction
-    if "decided" in text_lower or "use" in text_lower or "architect" in text_lower:
-        if "payment" in text_lower or "async" in text_lower or "auth" in text_lower:
+    if any(k in text_lower for k in ["decided", "use", "architect", "selected", "strategy", "pattern"]):
+        if any(k in text_lower for k in ["payment", "async", "auth", "rag", "database", "webhook"]):
             create_memory(db, conversation_id, MemoryCreateRequest(
                 category="decision",
                 key="Architectural Choice",
                 value=user_content[:150],
                 is_pinned=False
             ))
+
+    # Rule 4: User Preference / Context extraction
+    if len(user_content.strip()) > 10 and not user_content.startswith("http"):
+        clean_user_topic = " ".join(user_content.strip().split()[:6])
+        create_memory(db, conversation_id, MemoryCreateRequest(
+            category="project_context",
+            key=f"Topic: {clean_user_topic}",
+            value=user_content[:120],
+            is_pinned=False
+        ))
 
 def build_context_package(db: Session, conversation_id: str, current_prompt: str) -> ContextPackage:
     conv = db.query(Conversation).filter(Conversation.id == conversation_id).first()
@@ -137,6 +156,16 @@ def build_context_package(db: Session, conversation_id: str, current_prompt: str
                 is_relevant = True
 
         if is_relevant:
+            relevant_mem_items.append(MemoryItem(
+                category=m.category,
+                key=m.key,
+                value=m.value,
+                is_pinned=bool(m.is_pinned)
+            ))
+
+    # Include top 5 most recent learned memories unconditionally so context is always retained
+    for m in all_memories[:5]:
+        if m.key not in [rm.key for rm in relevant_mem_items]:
             relevant_mem_items.append(MemoryItem(
                 category=m.category,
                 key=m.key,
