@@ -211,13 +211,13 @@ export function LandingPage() {
             </p>
           </div>
 
-          <div className="glass-card p-6 border border-white/10 space-y-3 hover:border-orange-500/40 transition-colors">
-            <div className="px-3 py-1 rounded-lg bg-orange-500/20 text-orange-300 border border-orange-500/30 text-xs font-bold inline-block">
-              Local AI & RAG
+          <div className="glass-card p-6 border border-white/10 space-y-3 hover:border-cyan-500/40 transition-colors">
+            <div className="px-3 py-1 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-bold inline-block">
+              DeepSeek & Groq
             </div>
-            <h3 className="text-base font-bold text-white">llama.cpp / Qwen2.5</h3>
+            <h3 className="text-base font-bold text-white">DeepSeek R1 & Groq</h3>
             <p className="text-xs text-text-secondary leading-relaxed">
-              Self-hosted CPU inference and 28-domain offline RAG knowledge retrieval.
+              Open reasoning and ultra-fast LPU inference at 500+ tokens/sec.
             </p>
           </div>
         </div>
@@ -287,8 +287,8 @@ export function LandingPage() {
               a: "SwitchAI's Circuit Breaker automatically detects rate limits and temporary service outages. It instantly reroutes your request to the next healthy connected provider in your fallback chain without resetting your conversation or losing context."
             },
             {
-              q: "Can I run SwitchAI completely offline?",
-              a: "Yes. SwitchAI includes a local provider adapter for llama.cpp and LM Studio (http://127.0.0.1:8080/v1) and an embedded 28-domain RAG Knowledge Engine."
+              q: "Can SwitchAI function when cloud APIs are offline or out of quota?",
+              a: "Yes. SwitchAI includes an embedded 28-domain RAG Knowledge Engine and live DuckDuckGo/Wikipedia search that generates grounded answers from your shared memory bank with zero token cost."
             }
           ].map((faq, idx) => (
             <div key={idx} className="glass-card border border-white/10 overflow-hidden">

@@ -19,10 +19,6 @@ class Settings(BaseSettings):
     ENCRYPTION_KEY: str
     BACKEND_CORS_ORIGINS: list = ["http://localhost:5173", "http://127.0.0.1:5173"]
 
-    # Local AI Configuration
-    LOCAL_AI_BASE_URL: str = "http://127.0.0.1:8080/v1"
-    LOCAL_AI_MODEL: Optional[str] = "Qwen2.5-1.5B-Instruct-Q4_K_M"
-
     model_config = SettingsConfigDict(env_file=ENV_FILE_PATH, extra="ignore")
 
 settings = Settings()

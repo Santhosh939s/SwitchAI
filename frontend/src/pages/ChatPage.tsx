@@ -64,7 +64,6 @@ const ALL_PROVIDERS = [
   { id: 'groq', name: 'Llama 3.3 (Groq LPU)', badgeBg: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
   { id: 'mistral', name: 'Mistral (Mistral AI)', badgeBg: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
   { id: 'cohere', name: 'Command R+ (Cohere)', badgeBg: 'bg-teal-500/20 text-teal-400 border-teal-500/30' },
-  { id: 'local', name: '💻 Local AI (Self-Hosted)', badgeBg: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' },
 ];
 
 export function ChatPage() {

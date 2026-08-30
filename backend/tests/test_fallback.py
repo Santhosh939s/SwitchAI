@@ -98,8 +98,7 @@ def test_auth_error_triggers_fallback(mock_ant, auth_headers):
 @patch("app.adapters.groq.GroqAdapter.generate", side_effect=Exception("429 Rate limit"))
 @patch("app.adapters.mistral.MistralAdapter.generate", side_effect=Exception("429 Rate limit"))
 @patch("app.adapters.cohere.CohereAdapter.generate", side_effect=Exception("429 Rate limit"))
-@patch("app.adapters.local.LocalAdapter.generate", side_effect=Exception("Local AI server offline"))
-def test_all_providers_failing_graceful_error(m8, m7, m6, m5, m4, m3, m2, m1, auth_headers):
+def test_all_providers_failing_graceful_error(m7, m6, m5, m4, m3, m2, m1, auth_headers):
     resp = client.post("/api/conversations", json={"title": "All Fail Test"}, headers=auth_headers)
     conv_id = resp.json()["id"]
 

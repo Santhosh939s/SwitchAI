@@ -44,18 +44,16 @@ def test_get_providers_initial_status(auth_headers):
     resp = client.get("/api/providers", headers=auth_headers)
     assert resp.status_code == 200
     providers = resp.json()
-    assert len(providers) == 8
+    assert len(providers) == 7
     provider_names = [p["provider"] for p in providers]
     assert "anthropic" in provider_names
     assert "gemini" in provider_names
     assert "openai" in provider_names
     assert "deepseek" in provider_names
-    assert "local" in provider_names
     for p in providers:
-        if p["provider"] != "local":
-            assert p["status"] == "NOT_CONNECTED"
-            assert p["is_connected"] is False
-            assert p["is_healthy"] is False
+        assert p["status"] == "NOT_CONNECTED"
+        assert p["is_connected"] is False
+        assert p["is_healthy"] is False
 
 @patch("app.adapters.anthropic.AnthropicAdapter.validate_credentials", return_value=True)
 @patch("app.adapters.anthropic.AnthropicAdapter.discover_models", return_value=["claude-3-5-sonnet-20241022"])

@@ -13,12 +13,12 @@ from app.schemas.context import ContextPackage
 CIRCUIT_BREAKER_FAILURES: Dict[str, int] = {}
 CIRCUIT_BREAKER_LAST_FAILURE: Dict[str, float] = {}
 
+FAILURE_THRESHOLD = 3
+COOLDOWN_SECONDS = 30.0
+
 def reset_circuit_breaker():
     CIRCUIT_BREAKER_FAILURES.clear()
     CIRCUIT_BREAKER_LAST_FAILURE.clear()
-
-FAILURE_THRESHOLD = 3
-COOLDOWN_SECONDS = 30.0
 
 def is_circuit_open(provider: str) -> bool:
     p = provider.lower()
@@ -56,17 +56,10 @@ def get_fallback_chain(primary_provider: str, db: Session, user_id: str) -> List
     primary = primary_provider.lower()
     conns = get_user_provider_connections(db, user_id)
 
-    connected = []
-    for p in SUPPORTED_PROVIDERS:
-        if is_circuit_open(p):
-            continue
-        if p == "local":
-            # Only include local AI in active fallback chain if local server health check passes
-            local_adapter = get_adapter("local")
-            if local_adapter.get_health("").is_healthy:
-                connected.append("local")
-        elif p in conns and conns[p].status in ("CREDENTIALS_SAVED", "HEALTHY"):
-            connected.append(p)
+    connected = [
+        p for p in SUPPORTED_PROVIDERS 
+        if p in conns and conns[p].status in ("CREDENTIALS_SAVED", "HEALTHY") and not is_circuit_open(p)
+    ]
 
     if primary in connected:
         chain = [primary] + [p for p in connected if p != primary]

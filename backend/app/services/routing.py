@@ -39,12 +39,6 @@ def route_request(db: Session, user_id: str, prompt: str, priority: str = "balan
         p for p in SUPPORTED_PROVIDERS 
         if p in conns and conns[p].status in ("CREDENTIALS_SAVED", "HEALTHY") and not is_circuit_open(p)
     ]
-    
-    # Check if local AI is online and running
-    if "local" in SUPPORTED_PROVIDERS and "local" not in connected:
-        local_adapter = get_adapter("local")
-        if local_adapter.get_health("").is_healthy:
-            connected.append("local")
 
     # Fallback to supported providers if no user keys are connected yet (e.g. preview mode)
     if not connected:

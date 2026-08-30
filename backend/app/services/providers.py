@@ -11,7 +11,6 @@ from app.adapters.deepseek import DeepSeekAdapter
 from app.adapters.groq import GroqAdapter
 from app.adapters.mistral import MistralAdapter
 from app.adapters.cohere import CohereAdapter
-from app.adapters.local import LocalAdapter
 from app.adapters.rag import RagAdapter
 from app.schemas.provider import ProviderStatusResponse, ProviderTestResponse
 
@@ -23,11 +22,10 @@ ADAPTERS = {
     "groq": GroqAdapter(),
     "mistral": MistralAdapter(),
     "cohere": CohereAdapter(),
-    "local": LocalAdapter(),
     "rag_engine": RagAdapter(),
 }
 
-SUPPORTED_PROVIDERS = ["gemini", "openai", "anthropic", "deepseek", "groq", "mistral", "cohere", "local"]
+SUPPORTED_PROVIDERS = ["gemini", "openai", "anthropic", "deepseek", "groq", "mistral", "cohere"]
 
 def get_adapter(provider: str):
     p = provider.lower()
@@ -47,20 +45,7 @@ def list_provider_statuses(db: Session, user_id: str) -> List[ProviderStatusResp
         conn = conns.get(provider)
         adapter = ADAPTERS[provider]
 
-        if provider == "local":
-            health = adapter.get_health("")
-            status_str = "HEALTHY" if health.is_healthy else ("RUNNING" if health.discovered_models else "NOT_RUNNING")
-            discovered_models = health.discovered_models or adapter.list_models()
-            results.append(ProviderStatusResponse(
-                provider=provider,
-                status=status_str,
-                is_connected=True, # Local AI is natively available
-                is_healthy=health.is_healthy,
-                default_model=discovered_models[0],
-                available_models=discovered_models,
-                updated_at=datetime.datetime.utcnow()
-            ))
-        elif not conn:
+        if not conn:
             results.append(ProviderStatusResponse(
                 provider=provider,
                 status="NOT_CONNECTED",

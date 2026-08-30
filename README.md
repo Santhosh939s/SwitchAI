@@ -3,7 +3,7 @@
 > **BuildSprint 2026 Project by LatentForce**  
 > Built exclusively using **LatentCode** AI coding harness and enhanced with SkillPatch agent skills.
 
-SwitchAI decouples AI conversation state and memory from model providers. The user maintains **ONE** shared memory system across 7 Cloud AI Providers (Google Gemini, OpenAI GPT, Anthropic Claude, DeepSeek, Groq LPU, Mistral AI, Cohere) and self-hosted **Local AI** (llama.cpp / Qwen2.5).
+SwitchAI decouples AI conversation state and memory from model providers. The user maintains **ONE** shared memory system across 7 Cloud AI Providers (Google Gemini, OpenAI GPT, Anthropic Claude, DeepSeek, Groq LPU, Mistral AI, Cohere).
 
 ---
 
@@ -26,17 +26,15 @@ SwitchAI decouples AI conversation state and memory from model providers. The us
    - Dynamic `/models` discovery filters out non-chat specialty models (`-tts`, `-transcribe`, `computer-use`, `deep-research`).
 8. **Resilient Circuit Breaker & Fallback:**
    - Bounded exponential backoff, rate limit (429) detection, circuit breaker cooldowns, and automatic rerouting across connected providers or the offline RAG engine.
-9. **Self-Hosted Local AI Provider:**
-   - Native support for local OpenAI-compatible inference servers (e.g. `llama.cpp` on `http://127.0.0.1:8080/v1` with Qwen2.5-1.5B) for 100% offline CPU execution.
-10. **Smart Task Auto-Routing:**
-    - Request classifier (`coding`, `reasoning`, `long_context`, `summarization`, `fast_response`) with user strategy priorities (`quality`, `speed`, `cost`, `balanced`).
-11. **File Context Uploads:**
+9. **Smart Task Auto-Routing:**
+   - Request classifier (`coding`, `reasoning`, `long_context`, `summarization`, `fast_response`) with user strategy priorities (`quality`, `speed`, `cost`, `balanced`).
+10. **File Context Uploads:**
     - Support for attaching `.txt`, `.md`, `.json`, `.csv` document summaries directly to the `ContextPackage`.
-12. **LatentForce Cyber-Flame Theme Aesthetic:**
+11. **LatentForce Cyber-Flame Theme Aesthetic:**
     - LatentForce Flame Orange `#EE5622` theme, dark obsidian background grid texture (`#0A0A0B`), glassmorphic cards, interactive model-switching simulator, and accordion FAQ.
-13. **Secure Provider Connections:**
+12. **Secure Provider Connections:**
     - Credentials encrypted at rest via 32-byte Fernet symmetric keys; zero client-side key storage.
-14. **Internal Telemetry Dashboard:**
+13. **Internal Telemetry Dashboard:**
     - Performance telemetry tracking requests, latency, token estimates, and fallback counts.
 
 ---
@@ -88,7 +86,7 @@ npm run build
 
 1. **Landing Page:** Open `http://localhost:5173` → Click "Start chatting".
 2. **Signup / Login:** Create a new SwitchAI account at `/signup`.
-3. **Connect Providers:** Navigate to `/settings/providers` → Connect Gemini, OpenAI, DeepSeek, or Anthropic keys (or test with mock keys / Local AI).
+3. **Connect Providers:** Navigate to `/settings/providers` → Connect Gemini, OpenAI, DeepSeek, or Anthropic keys.
 4. **Start Chat:** Navigate to `/chat` → Type: *"I am building a college food delivery app using FastAPI, PostgreSQL, and React."*
 5. **Shared Memory Inspection:** Click "🧠 Shared Memory" → Verify extracted goals, tech stack facts, and architectural decisions.
 6. **RAG-First Lookup (`🧠 RAG` Toggle):** Ask *"What is Machine Learning?"* → Observe instant 0-token response from RAG Knowledge Base. Toggle RAG Off for direct Cloud AI generation.

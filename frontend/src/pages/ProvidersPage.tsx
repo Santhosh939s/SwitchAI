@@ -9,7 +9,7 @@ import {
 
 interface ProviderStatus {
   provider: string;
-  status: 'HEALTHY' | 'UNHEALTHY' | 'CREDENTIALS_SAVED' | 'NOT_CONNECTED' | 'RUNNING' | 'NOT_RUNNING';
+  status: 'HEALTHY' | 'UNHEALTHY' | 'CREDENTIALS_SAVED' | 'NOT_CONNECTED';
   is_connected: boolean;
   is_healthy: boolean;
   default_model?: string;
@@ -18,11 +18,6 @@ interface ProviderStatus {
 }
 
 const PROVIDER_METADATA: Record<string, { title: string; desc: string; iconBg: string }> = {
-  local: {
-    title: 'Local AI (Offline Model)',
-    desc: 'Self-hosted quantized model (Qwen2.5 / Llama) running on local CPU server via llama.cpp or LM Studio.',
-    iconBg: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
-  },
   anthropic: {
     title: 'Anthropic Claude',
     desc: 'Claude 3.5 Sonnet, Opus & Haiku models for deep analysis and reasoning.',
@@ -85,12 +80,12 @@ export function ProvidersPage() {
   }, []);
 
   const handleConnect = async (provider: string) => {
-    if (provider !== 'local' && !apiKeyInput.trim()) return;
+    if (!apiKeyInput.trim()) return;
     setActionLoading(provider);
     setFeedbackMessage(null);
 
     try {
-      await connectProvider(provider, apiKeyInput.trim() || 'local_native');
+      await connectProvider(provider, apiKeyInput.trim());
       setFeedbackMessage({
         provider,
         type: 'success',
@@ -164,14 +159,7 @@ export function ProvidersPage() {
     }
   };
 
-  const getStatusBadge = (status: ProviderStatus['status'], isHealthy: boolean, isLocal: boolean) => {
-    if (isLocal) {
-      if (isHealthy || status === 'HEALTHY' || status === 'RUNNING') {
-        return <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">● Local Server Running</span>;
-      }
-      return <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20">✕ Local Server Offline</span>;
-    }
-
+  const getStatusBadge = (status: ProviderStatus['status'], isHealthy: boolean) => {
     if (status === 'HEALTHY' || isHealthy) {
       return <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-green-500/10 text-green-400 border border-green-500/20">● HEALTHY</span>;
     }
@@ -202,7 +190,7 @@ export function ProvidersPage() {
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-white mt-2">AI Provider Connections</h1>
           <p className="text-sm text-text-secondary mt-1">
-            Connect official cloud provider keys or self-host a local OpenAI-compatible inference server.
+            Connect official cloud provider keys securely.
           </p>
         </div>
 
@@ -210,7 +198,7 @@ export function ProvidersPage() {
         <div className="relative w-full md:w-72">
           <input
             type="text"
-            placeholder="🔍 Search providers (Local AI, DeepSeek, Claude...)"
+            placeholder="🔍 Search providers (DeepSeek, Claude...)"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full px-3.5 py-2 rounded-xl bg-neutral-bg2 border border-border focus:border-brand text-xs text-white placeholder-text-muted outline-none transition-colors"
@@ -231,7 +219,6 @@ export function ProvidersPage() {
             const isInputActive = activeInputProvider === p.provider;
             const isProcessing = actionLoading === p.provider;
             const msg = feedbackMessage?.provider === p.provider ? feedbackMessage : null;
-            const isLocal = p.provider === 'local';
 
             return (
               <div key={p.provider} className="glass-card p-6 border border-border flex flex-col justify-between space-y-6">
@@ -240,7 +227,7 @@ export function ProvidersPage() {
                     <span className={`px-3 py-1.5 rounded-lg text-xs font-bold border ${meta.iconBg}`}>
                       {meta.title}
                     </span>
-                    {getStatusBadge(p.status, p.is_healthy, isLocal)}
+                    {getStatusBadge(p.status, p.is_healthy)}
                   </div>
 
                   <div>
@@ -266,15 +253,7 @@ export function ProvidersPage() {
                 </div>
 
                 <div className="space-y-3 pt-4 border-t border-border-subtle">
-                  {isLocal ? (
-                    <button
-                      onClick={() => handleTest('local')}
-                      disabled={isProcessing}
-                      className="w-full py-2 px-3 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 text-xs font-medium transition-colors disabled:opacity-50"
-                    >
-                      {isProcessing ? 'Checking Server...' : 'Test Local Server Health'}
-                    </button>
-                  ) : p.is_connected ? (
+                  {p.is_connected ? (
                     <div className="flex space-x-2">
                       <button
                         onClick={() => handleTest(p.provider)}
