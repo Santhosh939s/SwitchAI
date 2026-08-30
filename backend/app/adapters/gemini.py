@@ -5,7 +5,7 @@ from app.adapters.base import ProviderAdapter, ProviderResponse, NormalizedError
 from app.schemas.context import ContextPackage
 
 class GeminiAdapter(ProviderAdapter):
-    DEFAULT_MODELS = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"]
+    DEFAULT_MODELS = ["gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-flash-latest"]
 
     def validate_credentials(self, api_key: str) -> bool:
         if not api_key or len(api_key) < 10:
@@ -48,12 +48,12 @@ class GeminiAdapter(ProviderAdapter):
                             continue
 
                         # Keep only models matching -flash or -pro that support generateContent
-                        if "generateContent" in methods and ("-flash" in name or "-pro" in name):
+                        if "generateContent" in methods and ("-flash" in name or "-pro" in name or "latest" in name):
                             discovered.append(name)
 
                     if discovered:
                         sorted_models = sorted(discovered)
-                        priority_order = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"]
+                        priority_order = ["gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-flash-latest", "gemini-1.5-flash"]
                         top_models = [m for m in priority_order if m in sorted_models]
                         other_models = [m for m in sorted_models if m not in top_models]
                         return top_models + other_models
@@ -81,17 +81,17 @@ class GeminiAdapter(ProviderAdapter):
 
     def _sanitize_model_name(self, model_name: Optional[str]) -> str:
         if not model_name:
-            return "gemini-1.5-flash"
+            return "gemini-3.6-flash"
         clean = model_name.replace("models/", "").strip()
-        standard_models = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash"]
-        if clean in standard_models:
+        # Allow valid modern gemini models without forcing downgrade to deprecated 1.5/2.0 models
+        if clean.startswith("gemini-") or clean.startswith("gemma-"):
             return clean
         if "pro" in clean:
-            return "gemini-1.5-pro"
-        return "gemini-1.5-flash"
+            return "gemini-3.6-flash"
+        return "gemini-3.6-flash"
 
     def generate(self, context_package: ContextPackage, api_key: str, model: Optional[str] = None) -> ProviderResponse:
-        model_name = self._sanitize_model_name(model or "gemini-1.5-flash")
+        model_name = self._sanitize_model_name(model or "gemini-3.6-flash")
 
         if not api_key:
             raise ValueError("Gemini API key is missing. Please connect your Gemini API key in Settings -> Providers.")
