@@ -31,7 +31,7 @@ RAG_KNOWLEDGE_BASE: List[Dict[str, str]] = [
     },
     {
         "topic": "greeting",
-        "keywords": "hello hey assistance start options what can you do",
+        "keywords": "hello hi hey greetings",
         "response": """Hello! I am **SwitchAI RAG Engine** — your persistent, provider-independent AI assistant.
 
 I learn from your chat history, project goals, decisions, uploaded files, and live web search. Even when cloud API quotas are exhausted, I retain your full memory bank!
@@ -67,10 +67,9 @@ def query_rag_engine(db: Session, conversation_id: str, prompt: str, context_pac
     for f in context_package.relevant_files:
         memory_context_lines.append(f"• [FILE] {f.filename}: {f.content_summary}")
 
-    header = "🌐 **[SwitchAI Live Web Search & RAG Engine]**\n*Retrieved live search results & parsed facts for your query.*\n\n"
-
     # 2. Prioritize Live Web Search Results if present
     if web_results and len(web_results) > 0:
+        header = "🌐 **[SwitchAI Live Web Search & RAG Engine]**\n*Retrieved live search results & parsed facts for your query.*\n\n"
         body = f"Here are the latest live web search answers for: **\"{prompt}\"**\n\n"
         for i, item in enumerate(web_results, 1):
             title = item.get("title", "Web Fact").strip()
@@ -93,14 +92,14 @@ def query_rag_engine(db: Session, conversation_id: str, prompt: str, context_pac
                 for s in sentences[:3]:
                     chat_learned_facts.append(s)
 
-    # 4. Match knowledge base topic
+    # 4. Match knowledge base topic if score >= 2
     matched_kb: Optional[str] = None
     best_score = 0
 
     for kb in RAG_KNOWLEDGE_BASE:
         kb_words = set(kb["keywords"].split())
         score = len(words.intersection(kb_words))
-        if score > best_score:
+        if score >= 2 and score > best_score:
             best_score = score
             matched_kb = kb["response"]
 
@@ -109,20 +108,20 @@ def query_rag_engine(db: Session, conversation_id: str, prompt: str, context_pac
     if matched_kb:
         body = matched_kb
     else:
-        body = f"I analyzed your prompt: **\"{prompt}\"**.\n\n"
+        body = f"### Response for: **\"{prompt}\"**\n\n"
         if memory_context_lines or chat_learned_facts:
-            body += "Based on what I learned from your project context, here is the relevant state:\n"
+            body += "Based on what I learned from your project context and chat history:\n"
         else:
-            body += "You can connect new provider keys in **Settings → Providers** or run a local AI server to continue cloud generation."
+            body += "I received your query. You can connect new provider API keys in **Settings → Providers** or run a local AI server to resume full LLM generation.\n"
 
     # Attach learned chat facts if relevant
     if chat_learned_facts and not matched_kb:
-        body += "\n\n### Learned Chat History Insights:\n"
+        body += "\n### Learned Chat History Insights:\n"
         for fact in chat_learned_facts[:3]:
             body += f"> {fact}\n"
 
     # Attach retained shared memory context
     if memory_context_lines:
-        body += "\n\n---\n### Retained Shared Memory Context:\n" + "\n".join(memory_context_lines)
+        body += "\n---\n### Retained Shared Memory Context:\n" + "\n".join(memory_context_lines)
 
     return offline_header + body
