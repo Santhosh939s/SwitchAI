@@ -56,7 +56,7 @@ interface ProviderStatus {
 }
 
 const ALL_PROVIDERS = [
-  { id: 'auto', name: '✨ Auto (Smart Router)', badgeBg: 'bg-brand-subtle text-brand-light border-brand/30' },
+  { id: 'auto', name: '⚡ Auto (Smart Router)', badgeBg: 'bg-orange-500/20 text-orange-400 border-orange-500/30' },
   { id: 'gemini', name: 'Gemini (Google)', badgeBg: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
   { id: 'openai', name: 'GPT (OpenAI)', badgeBg: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
   { id: 'anthropic', name: 'Claude (Anthropic)', badgeBg: 'bg-orange-500/20 text-orange-400 border-orange-500/30' },
@@ -346,7 +346,7 @@ export function ChatPage() {
   );
 
   const availableDropdownProviders = [
-    { id: 'auto', name: '✨ Auto (Smart Router)', badgeBg: 'bg-brand-subtle text-brand-light border-brand/30' },
+    { id: 'auto', name: '⚡ Auto (Smart Router)', badgeBg: 'bg-orange-500/20 text-orange-400 border-orange-500/30' },
     ...ALL_PROVIDERS.filter((p) => p.id !== 'auto' && connectedSet.has(p.id.toLowerCase()))
   ];
 

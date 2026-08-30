@@ -4,12 +4,29 @@
 
 :root {
   color-scheme: dark;
+  --bg-primary: #0A0A0B;
+  --bg-secondary: #121215;
+  --bg-card: rgba(18, 18, 21, 0.75);
+  
+  --brand-orange: #EE5622;
+  --brand-orange-hover: #FF6B35;
+  --brand-orange-glow: rgba(238, 86, 34, 0.35);
+  --brand-amber: #F59E0B;
+  
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-orange: rgba(238, 86, 34, 0.3);
+  --text-primary: #FAFAFA;
+  --text-secondary: #A1A1AA;
 }
 
 body {
   @apply text-text-primary antialiased;
-  background-color: #0B0F17;
-  background-image: radial-gradient(ellipse at top, #161D2F 0%, #0B0F17 100%);
+  background-color: #0A0A0B;
+  background-image: 
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(238, 86, 34, 0.15), transparent),
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 100% 100%, 40px 40px, 40px 40px;
   min-height: 100vh;
   margin: 0;
   font-family: 'Outfit', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -17,13 +34,13 @@ body {
 
 @layer components {
   .glass {
-    @apply backdrop-blur-md bg-[#161D2F]/65 border border-white/10;
+    @apply backdrop-blur-md bg-[#121215]/80 border border-white/10;
   }
   .glass-card {
-    @apply backdrop-blur-md bg-[#161D2F]/65 border border-white/10 rounded-2xl;
+    @apply backdrop-blur-md bg-[#121215]/80 border border-white/10 rounded-2xl;
   }
   .shadow-glow {
-    box-shadow: 0 0 25px -5px rgba(124, 58, 237, 0.4);
+    box-shadow: 0 0 25px -5px rgba(238, 86, 34, 0.4);
   }
   .shadow-glow-cyan {
     box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.4);

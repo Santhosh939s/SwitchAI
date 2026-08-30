@@ -16,16 +16,16 @@ export function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen text-white flex flex-col justify-between selection:bg-purple-500/30 selection:text-purple-200">
+    <div className="min-h-screen text-white flex flex-col justify-between selection:bg-orange-500/30 selection:text-orange-200">
       {/* 1. Floating Glassmorphic Navbar */}
       <nav className="sticky top-4 z-50 max-w-6xl mx-auto w-[92%] px-6 py-3.5 rounded-2xl glass border border-white/10 flex items-center justify-between shadow-2xl transition-all">
         <Link to="/" className="flex items-center space-x-2.5 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-violet-600 via-purple-500 to-cyan-400 p-[1px] shadow-glow">
-            <div className="w-full h-full bg-[#0B0F17] rounded-[11px] flex items-center justify-center font-bold text-transparent bg-clip-text bg-gradient-to-tr from-cyan-400 to-violet-400">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 via-orange-500 to-red-500 p-[1px] shadow-glow">
+            <div className="w-full h-full bg-[#0A0A0B] rounded-[11px] flex items-center justify-center font-bold text-transparent bg-clip-text bg-gradient-to-tr from-orange-400 to-amber-300">
               ⚡
             </div>
           </div>
-          <span className="font-extrabold text-xl tracking-tight text-white group-hover:text-cyan-300 transition-colors">
+          <span className="font-extrabold text-xl tracking-tight text-white group-hover:text-orange-400 transition-colors">
             SwitchAI
           </span>
         </Link>
@@ -49,7 +49,7 @@ export function LandingPage() {
           </a>
           <Link
             to="/chat"
-            className="px-5 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-500 hover:from-violet-500 hover:to-cyan-400 text-xs font-bold text-white shadow-glow transition-all"
+            className="px-5 py-2 rounded-xl bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-xs font-bold text-white shadow-glow transition-all"
           >
             Launch App
           </Link>
@@ -58,14 +58,14 @@ export function LandingPage() {
 
       {/* 2. Hero Section */}
       <section className="pt-16 pb-20 px-6 max-w-5xl mx-auto text-center space-y-8">
-        <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full glass border border-purple-500/30 text-xs font-semibold text-purple-300 animate-pulse">
-          <span>✨ Powered by LatentCode • Multi-Provider RAG & Shared Memory</span>
+        <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full glass border border-orange-500/30 text-xs font-semibold text-orange-300 animate-pulse">
+          <span>✨ Powered by LatentForce • Multi-Provider RAG & Shared Memory</span>
         </div>
 
         <div className="space-y-4">
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-tight">
             One Memory.{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-300 to-red-400">
               Infinite AI Models.
             </span>
           </h1>
@@ -78,7 +78,7 @@ export function LandingPage() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
           <Link
             to="/chat"
-            className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-500 hover:from-violet-500 hover:to-cyan-400 text-sm font-bold text-white shadow-glow transition-all flex items-center justify-center space-x-2"
+            className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-sm font-bold text-white shadow-glow transition-all flex items-center justify-center space-x-2"
           >
             <span>Start Chatting Now</span>
             <span className="text-base">→</span>
@@ -132,7 +132,7 @@ export function LandingPage() {
             {/* Simulated Live Chat State */}
             <div className="space-y-4 font-sans text-xs">
               <div className="flex justify-end">
-                <div className="p-3 rounded-xl bg-violet-600/30 border border-violet-500/40 text-white max-w-lg">
+                <div className="p-3 rounded-xl bg-orange-600/30 border border-orange-500/40 text-white max-w-lg">
                   I'm building a college food delivery platform using FastAPI, PostgreSQL, and React. Design the payment system.
                 </div>
               </div>
@@ -158,7 +158,7 @@ export function LandingPage() {
             </div>
 
             {/* Context Passport Transfer Badge */}
-            <div className="p-3.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-xs text-purple-200 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div className="p-3.5 rounded-xl bg-orange-500/10 border border-orange-500/30 text-xs text-orange-200 flex flex-col sm:flex-row items-center justify-between gap-2">
               <div className="flex items-center space-x-2 font-mono">
                 <span className="text-amber-400">⚡</span>
                 <span>Context Passport Active: 3 Memories + 1 Goal + File Context Preserved</span>
@@ -211,8 +211,8 @@ export function LandingPage() {
             </p>
           </div>
 
-          <div className="glass-card p-6 border border-white/10 space-y-3 hover:border-purple-500/40 transition-colors">
-            <div className="px-3 py-1 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs font-bold inline-block">
+          <div className="glass-card p-6 border border-white/10 space-y-3 hover:border-orange-500/40 transition-colors">
+            <div className="px-3 py-1 rounded-lg bg-orange-500/20 text-orange-300 border border-orange-500/30 text-xs font-bold inline-block">
               Local AI & RAG
             </div>
             <h3 className="text-base font-bold text-white">llama.cpp / Qwen2.5</h3>
@@ -244,7 +244,7 @@ export function LandingPage() {
           </div>
 
           <div className="glass-card p-8 border border-white/10 space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-2xl text-purple-400">
+            <div className="w-12 h-12 rounded-2xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-2xl text-orange-400">
               🧠
             </div>
             <h3 className="text-lg font-bold text-white">Offline RAG Knowledge Engine</h3>
@@ -254,7 +254,7 @@ export function LandingPage() {
           </div>
 
           <div className="glass-card p-8 border border-white/10 space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-2xl text-emerald-400">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-2xl text-amber-400">
               ⚡
             </div>
             <h3 className="text-lg font-bold text-white">Circuit Breaker & Fallback</h3>
@@ -297,7 +297,7 @@ export function LandingPage() {
                 className="w-full px-6 py-4 text-left text-sm font-semibold text-white flex justify-between items-center hover:bg-white/5 transition-colors"
               >
                 <span>{faq.q}</span>
-                <span className="text-brand-light font-mono text-lg">{activeFaq === idx ? '−' : '+'}</span>
+                <span className="text-orange-400 font-mono text-lg">{activeFaq === idx ? '−' : '+'}</span>
               </button>
               {activeFaq === idx && (
                 <div className="px-6 pb-5 text-xs text-text-secondary leading-relaxed border-t border-white/5 pt-3">

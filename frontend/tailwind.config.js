@@ -5,27 +5,28 @@ export default {
     extend: {
       colors: {
         brand: {
-          DEFAULT: '#8251EE',
-          hover: '#9366F5',
-          light: '#A37EF5',
-          subtle: 'rgba(130, 81, 238, 0.15)',
+          DEFAULT: '#EE5622',
+          hover: '#FF6B35',
+          light: '#FF8552',
+          subtle: 'rgba(238, 86, 34, 0.15)',
         },
         neutral: {
-          bg1: 'hsl(240, 6%, 10%)',
-          bg2: 'hsl(240, 5%, 12%)',
-          bg3: 'hsl(240, 5%, 14%)',
-          bg4: 'hsl(240, 4%, 18%)',
-          bg5: 'hsl(240, 4%, 22%)',
+          bg1: '#0A0A0B',
+          bg2: '#121215',
+          bg3: '#18181C',
+          bg4: '#222228',
+          bg5: '#2A2A32',
         },
         text: {
-          primary: '#FFFFFF',
+          primary: '#FAFAFA',
           secondary: '#A1A1AA',
           muted: '#71717A',
         },
         border: {
-          subtle: 'hsla(0, 0%, 100%, 0.08)',
-          DEFAULT: 'hsla(0, 0%, 100%, 0.12)',
-          strong: 'hsla(0, 0%, 100%, 0.20)',
+          subtle: 'rgba(255, 255, 255, 0.08)',
+          DEFAULT: 'rgba(255, 255, 255, 0.12)',
+          orange: 'rgba(238, 86, 34, 0.3)',
+          strong: 'rgba(255, 255, 255, 0.20)',
         }
       }
     },
