@@ -7,18 +7,37 @@ SwitchAI decouples AI conversation state and memory from model providers. The us
 
 ---
 
-## Key Features
+## Key Architectural Features
 
 1. **Model-Independent Shared Memory:** Durable goals, facts, decisions, and constraints belong to SwitchAI rather than any single provider.
-2. **Context Passport:** Visual representation of transferred goals, facts, decisions, and conversation summary when switching providers mid-thread.
-3. **100% Free Live Web Search:** Keyless DuckDuckGo web search integration (`🌐 Web Search` toggle) that automatically extracts web facts and permanently stores them in SQLite shared memory.
-4. **Offline RAG Knowledge Engine:** Learns from past chat history, shared memories, and file attachments to generate contextual responses when cloud API quotas are exhausted.
-5. **Self-Hosted Local AI Provider:** Native support for local OpenAI-compatible inference servers (e.g. `llama.cpp` on `http://127.0.0.1:8080/v1` with Qwen2.5-1.5B) for 100% offline CPU execution.
-6. **Resilient Automatic Fallback:** Bounded exponential backoff, rate limit (429) detection, circuit breaker cooldowns, and automatic rerouting without losing thread state.
-7. **Smart Task Auto-Routing:** Request classifier (`coding`, `reasoning`, `long_context`, `summarization`, `fast_response`) with user strategy priority options (`quality`, `speed`, `cost`, `balanced`).
-8. **File Context Uploads:** Support for attaching `.txt`, `.md`, `.json`, `.csv` document summaries directly to the `ContextPackage`.
-9. **Secure Provider Connections:** Credentials encrypted at rest via 32-byte Fernet symmetric keys; zero client-side key storage.
-10. **Internal Telemetry Dashboard:** Performance telemetry tracking requests, latency, token estimates, and fallback counts.
+2. **Context Passport:** Visual representation of transferred goals, facts, decisions, and conversation summary when switching providers mid-thread with 0 context loss.
+3. **RAG-First Execution & Control (`🧠 RAG` Toggle):**
+   - **RAG-First Lookup (ON):** Checks local 28-domain grounded knowledge base and shared memory first. If matched, returns answers instantly with **0 cloud token cost**.
+   - **Direct Cloud AI (OFF):** Bypasses local pre-lookup, sending requests directly to Cloud AI model APIs.
+4. **100% Free Live Web Search (`🌐 Web` Toggle):**
+   - Keyless DuckDuckGo search integration with custom User-Agent Wikipedia REST API fallback.
+   - Live web search facts are automatically extracted and permanently saved into SQLite shared memory (`memories` table).
+5. **Concise Token-Efficient System Prompts:**
+   - Enforces strict system instructions across Gemini, OpenAI, and Anthropic adapters: *"Be concise, clear, and token-efficient. Provide direct answers without unnecessary fluff."*
+6. **28-Domain Grounded RAG Knowledge Base:**
+   - Embedded knowledge base covering Science, Tech, AI/ML, CS, Programming, Math, Physics, Chemistry, Biology, Medicine, History, Geography, India, Civics, Economics, Business, Finance, Environment, Space, Engineering, Literature, Language, Culture, Sports, Everyday Life, and General Knowledge with acronym expansion (`ml` $\rightarrow$ `machine learning`, `ai` $\rightarrow$ `artificial intelligence`, `db` $\rightarrow$ `database`).
+7. **Strict Connected Provider Isolation & Dynamic Model Discovery:**
+   - Chat dropdowns show **ONLY** connected providers with valid keys.
+   - Dynamic `/models` discovery filters out non-chat specialty models (`-tts`, `-transcribe`, `computer-use`, `deep-research`).
+8. **Resilient Circuit Breaker & Fallback:**
+   - Bounded exponential backoff, rate limit (429) detection, circuit breaker cooldowns, and automatic rerouting across connected providers or the offline RAG engine.
+9. **Self-Hosted Local AI Provider:**
+   - Native support for local OpenAI-compatible inference servers (e.g. `llama.cpp` on `http://127.0.0.1:8080/v1` with Qwen2.5-1.5B) for 100% offline CPU execution.
+10. **Smart Task Auto-Routing:**
+    - Request classifier (`coding`, `reasoning`, `long_context`, `summarization`, `fast_response`) with user strategy priorities (`quality`, `speed`, `cost`, `balanced`).
+11. **File Context Uploads:**
+    - Support for attaching `.txt`, `.md`, `.json`, `.csv` document summaries directly to the `ContextPackage`.
+12. **LatentForce Cyber-Flame Theme Aesthetic:**
+    - LatentForce Flame Orange `#EE5622` theme, dark obsidian background grid texture (`#0A0A0B`), glassmorphic cards, interactive model-switching simulator, and accordion FAQ.
+13. **Secure Provider Connections:**
+    - Credentials encrypted at rest via 32-byte Fernet symmetric keys; zero client-side key storage.
+14. **Internal Telemetry Dashboard:**
+    - Performance telemetry tracking requests, latency, token estimates, and fallback counts.
 
 ---
 
@@ -72,7 +91,8 @@ npm run build
 3. **Connect Providers:** Navigate to `/settings/providers` → Connect Gemini, OpenAI, DeepSeek, or Anthropic keys (or test with mock keys / Local AI).
 4. **Start Chat:** Navigate to `/chat` → Type: *"I am building a college food delivery app using FastAPI, PostgreSQL, and React."*
 5. **Shared Memory Inspection:** Click "🧠 Shared Memory" → Verify extracted goals, tech stack facts, and architectural decisions.
-6. **Live Web Search:** Click `🌐 Web Search` on the chat bar → Type: *"What is the latest news on FastAPI?"* → Observe web search facts saved into shared memory.
-7. **Switch Provider:** Change provider header selector to **Gemini (Google)**, **GPT (OpenAI)**, or **DeepSeek** → View the **Context Passport** sidebar and transfer notification banner.
-8. **Simulate Fallback / RAG Engine:** If cloud provider rate limits or quota errors occur, SwitchAI automatically falls back to secondary healthy providers or the offline **RAG Knowledge Engine**.
-9. **Telemetry:** Visit `/usage` to view tracked requests, average latency, and fallback counts.
+6. **RAG-First Lookup (`🧠 RAG` Toggle):** Ask *"What is Machine Learning?"* → Observe instant 0-token response from RAG Knowledge Base. Toggle RAG Off for direct Cloud AI generation.
+7. **Live Web Search (`🌐 Web` Toggle):** Click `🌐 Web` on the chat bar → Type: *"What is the latest news on AI?"* → Observe live web search results retrieved and saved into shared memory.
+8. **Switch Provider:** Change provider header selector to **Gemini (Google)**, **GPT (OpenAI)**, or **DeepSeek** → View the **Context Passport** sidebar and transfer notification banner.
+9. **Simulate Fallback / RAG Engine:** If cloud provider rate limits or quota errors occur, SwitchAI automatically falls back to secondary healthy providers or the offline **RAG Knowledge Engine**.
+10. **Telemetry:** Visit `/usage` to view tracked requests, average latency, and fallback counts.
