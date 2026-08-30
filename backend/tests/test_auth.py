@@ -55,6 +55,11 @@ def test_expired_jwt_handling():
     assert "Invalid or expired" in resp.json()["detail"]
 
 def test_user_registration_and_login_flow():
+    # 0. Login with non-existent user email -> 401
+    resp = client.post("/api/auth/login", json={"email": "nonexistent@example.com", "password": "somepassword123"})
+    assert resp.status_code == 401
+    assert "No account found with this email address" in resp.json()["detail"]
+
     reg_payload = {"email": "verifier@example.com", "password": "VerificationPassword123"}
     
     # 1. Signup
@@ -77,7 +82,7 @@ def test_user_registration_and_login_flow():
     # 3. Login incorrect password
     resp = client.post("/api/auth/login", json={"email": "verifier@example.com", "password": "WrongPassword"})
     assert resp.status_code == 401
-    assert "Incorrect email or password" in resp.json()["detail"]
+    assert "Incorrect password" in resp.json()["detail"]
 
     # 4. Login correct password
     resp = client.post("/api/auth/login", json=reg_payload)

@@ -28,11 +28,18 @@ def register(req: UserRegisterRequest, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=TokenResponse)
 def login(req: UserLoginRequest, db: Session = Depends(get_db)):
+    user_exists = get_user_by_email(db, req.email)
+    if not user_exists:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="No account found with this email address. Please sign up first."
+        )
+
     user = authenticate_user(db, req.email, req.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password"
+            detail="Incorrect password. Please verify your credentials."
         )
     
     access_token = create_access_token(data={"sub": user.id, "email": user.email})
