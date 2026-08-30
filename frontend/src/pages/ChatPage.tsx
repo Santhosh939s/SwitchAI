@@ -12,6 +12,7 @@ import {
   previewRoute,
   getProviderStatuses,
   uploadFile,
+  updateProfile,
 } from '../services/api';
 
 interface Conversation {
@@ -90,11 +91,41 @@ export function ChatPage() {
   const [deletingConvId, setDeletingConvId] = useState<string | null>(null);
   const [switchNotification, setSwitchNotification] = useState<{ text: string; sub: string } | null>(null);
   const [showPassportSidebar, setShowPassportSidebar] = useState(true);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileNameInput, setProfileNameInput] = useState('');
+  const [profileEmailInput, setProfileEmailInput] = useState('');
+  const [profileMsg, setProfileMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [profileUpdating, setProfileUpdating] = useState(false);
+  const { refreshUser } = useAuth();
   const [attachedFiles, setAttachedFiles] = useState<{ id: string; name: string }[]>([]);
   const [fileUploading, setFileUploadLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const openProfileModal = () => {
+    setProfileNameInput(user?.name || user?.email?.split('@')[0] || '');
+    setProfileEmailInput(user?.email || '');
+    setProfileMsg(null);
+    setShowProfileModal(true);
+  };
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setProfileMsg(null);
+    setProfileUpdating(true);
+
+    try {
+      await updateProfile(profileNameInput.trim(), profileEmailInput.trim());
+      await refreshUser();
+      setProfileMsg({ type: 'success', text: 'Profile updated and saved to database!' });
+      setTimeout(() => setShowProfileModal(false), 1200);
+    } catch (err: any) {
+      setProfileMsg({ type: 'error', text: err.message || 'Failed to update profile.' });
+    } finally {
+      setProfileUpdating(false);
+    }
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -352,6 +383,79 @@ export function ChatPage() {
 
   return (
     <div className="h-screen bg-neutral-bg1 flex text-white overflow-hidden">
+      {/* Profile Settings Modal */}
+      {showProfileModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+          <div className="glass-card p-6 sm:p-8 max-w-md w-full space-y-5 border border-white/10 shadow-2xl relative">
+            <div className="flex justify-between items-center pb-3 border-b border-white/10">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-orange-500 to-amber-400 p-[1px] shadow-glow">
+                  <div className="w-full h-full bg-[#0A0A0B] rounded-full flex items-center justify-center font-bold text-xs text-orange-300">
+                    👤
+                  </div>
+                </div>
+                <h3 className="text-base font-bold text-white">Profile Settings</h3>
+              </div>
+              <button
+                onClick={() => setShowProfileModal(false)}
+                className="text-text-muted hover:text-white text-xs font-mono"
+              >
+                ✕
+              </button>
+            </div>
+
+            {profileMsg && (
+              <div className={`p-3 text-xs rounded-xl border ${profileMsg.type === 'success' ? 'bg-green-500/10 border-green-500/30 text-green-400' : 'bg-red-500/10 border-red-500/30 text-red-400'}`}>
+                {profileMsg.text}
+              </div>
+            )}
+
+            <form onSubmit={handleSaveProfile} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-text-secondary">Full Name / Display Name</label>
+                <input
+                  type="text"
+                  required
+                  value={profileNameInput}
+                  onChange={(e) => setProfileNameInput(e.target.value)}
+                  placeholder="e.g. Santhosh Kumar"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-bg2 border border-border focus:border-orange-500 focus:outline-none text-xs text-white placeholder-text-muted"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-text-secondary">Email Address</label>
+                <input
+                  type="email"
+                  required
+                  value={profileEmailInput}
+                  onChange={(e) => setProfileEmailInput(e.target.value)}
+                  placeholder="you@example.com"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-bg2 border border-border focus:border-orange-500 focus:outline-none text-xs text-white placeholder-text-muted"
+                />
+              </div>
+
+              <div className="pt-2 flex space-x-3">
+                <button
+                  type="submit"
+                  disabled={profileUpdating}
+                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white text-xs font-bold shadow-glow transition-all disabled:opacity-50"
+                >
+                  {profileUpdating ? 'Saving...' : 'Save Profile Changes'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowProfileModal(false)}
+                  className="py-2.5 px-4 rounded-xl glass text-text-muted hover:text-white text-xs font-semibold"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Delete Confirmation Modal */}
       {deletingConvId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
@@ -508,9 +612,31 @@ export function ChatPage() {
             </span>
           </Link>
 
-          <div className="flex items-center justify-between px-2 pt-2">
-            <span className="text-xs text-text-muted truncate max-w-[120px]">{user?.email}</span>
-            <button onClick={logout} className="text-xs text-red-400 hover:underline">
+          {/* Bottom Left Profile Section */}
+          <div className="pt-2 flex items-center justify-between border-t border-border-subtle">
+            <button
+              onClick={openProfileModal}
+              title="Click to Edit Profile & Account Details"
+              className="flex items-center space-x-2.5 p-1.5 rounded-xl hover:bg-white/10 transition-colors group flex-1 mr-2"
+            >
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-orange-500 to-amber-400 p-[1px] shadow-glow flex-shrink-0">
+                <div className="w-full h-full bg-[#0A0A0B] rounded-full flex items-center justify-center font-bold text-xs text-orange-300">
+                  {user?.name ? user.name.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase() || '👤'}
+                </div>
+              </div>
+              <div className="flex flex-col text-left truncate">
+                <span className="text-xs font-bold text-white group-hover:text-orange-300 transition-colors truncate">
+                  {user?.name || user?.email?.split('@')[0]}
+                </span>
+                <span className="text-[10px] text-text-muted truncate">{user?.email}</span>
+              </div>
+            </button>
+
+            <button
+              onClick={logout}
+              title="Sign out"
+              className="text-xs text-red-400 hover:text-red-300 p-1.5 rounded-lg hover:bg-red-500/10 transition-colors"
+            >
               Logout
             </button>
           </div>

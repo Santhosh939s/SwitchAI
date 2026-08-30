@@ -47,10 +47,10 @@ export async function checkBackendHealth() {
   }
 }
 
-export async function registerUser(email: string, password: string) {
+export async function registerUser(email: string, password: string, name?: string) {
   const data = await apiRequest(`${API_BASE}/auth/register`, {
     method: 'POST',
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password, name }),
   });
   if (data.access_token) {
     setAuthToken(data.access_token);
@@ -79,6 +79,13 @@ export async function logoutUser() {
 
 export async function getCurrentUser() {
   return await apiRequest(`${API_BASE}/auth/me`, { method: 'GET' });
+}
+
+export async function updateProfile(name?: string, email?: string) {
+  return await apiRequest(`${API_BASE}/auth/profile`, {
+    method: 'PATCH',
+    body: JSON.stringify({ name, email }),
+  });
 }
 
 // Provider APIs

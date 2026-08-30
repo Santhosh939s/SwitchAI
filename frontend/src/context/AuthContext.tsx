@@ -4,6 +4,7 @@ import { getCurrentUser, logoutUser as apiLogout, getAuthToken } from '../servic
 interface User {
   id: string;
   email: string;
+  name?: string;
   created_at: string;
 }
 

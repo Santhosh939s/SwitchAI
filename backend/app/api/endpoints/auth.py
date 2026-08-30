@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.schemas.user import UserRegisterRequest, UserLoginRequest, UserResponse, TokenResponse
-from app.services.auth import get_user_by_email, create_user, authenticate_user
+from app.schemas.user import UserRegisterRequest, UserLoginRequest, UserUpdateRequest, UserResponse, TokenResponse
+from app.services.auth import get_user_by_email, create_user, authenticate_user, update_user_profile
 from app.core.security import create_access_token
 from app.api.deps import get_current_user
 from app.models.user import User
@@ -49,3 +49,14 @@ def logout(current_user: User = Depends(get_current_user)):
 @router.get("/me", response_model=UserResponse)
 def get_me(current_user: User = Depends(get_current_user)):
     return UserResponse.model_validate(current_user)
+
+@router.patch("/profile", response_model=UserResponse)
+def update_profile(
+    req: UserUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    try:
+        return update_user_profile(db, current_user.id, req)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
