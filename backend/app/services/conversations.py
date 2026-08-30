@@ -131,6 +131,9 @@ def send_message(db: Session, user_id: str, conversation_id: str, req: MessageCr
 
     # 2. Build ContextPackage
     context_package = build_context_package(db, conversation_id, req.content)
+    if web_results:
+        context_package.metadata["web_results"] = web_results
+
     past_msgs = db.query(Message).filter(Message.conversation_id == conversation_id).order_by(Message.created_at.asc()).all()
     message_items = [
         MessageItem(role=m.sender_role, content=m.content, provider=m.provider, model=m.model)

@@ -51,6 +51,10 @@ class AnthropicAdapter(ProviderAdapter):
         if context_package.relevant_files:
             file_lines = [f"- [{f.filename}] {f.content_summary}" for f in context_package.relevant_files]
             parts.append("Attached Files Context:\n" + "\n".join(file_lines))
+        web_results = context_package.metadata.get("web_results", [])
+        if web_results:
+            web_lines = [f"- [{r.get('title')}]({r.get('url')}): {r.get('snippet')}" for r in web_results]
+            parts.append("Live Web Search Results:\n" + "\n".join(web_lines))
         return "\n".join(parts)
 
     def _sanitize_model_name(self, model_name: Optional[str]) -> str:

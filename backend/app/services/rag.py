@@ -10,6 +10,7 @@ from app.schemas.context import ContextPackage
 # Comprehensive Multi-Domain RAG Knowledge Base Architecture
 RAG_KNOWLEDGE_BASE: List[Dict[str, str]] = [
     # 1. Science
+    {"topic": "greeting", "keywords": "hello hi hey greetings", "response": "Hello! I am **SwitchAI RAG Engine** — your persistent, provider-independent AI assistant. How can I assist you with your project architecture or code today?"},
     {"topic": "science", "keywords": "science systematic study natural physical world empirical observation evidence hypothesis experiment", "response": "Science is the systematic enterprise that builds and organizes knowledge in the form of testable explanations and predictions about the physical and natural universe using empirical observation, experimentation, and evidence."},
     
     # 2. Technology
@@ -163,7 +164,7 @@ def query_rag_engine(db: Session, conversation_id: str, prompt: str, context_pac
     for kb in RAG_KNOWLEDGE_BASE:
         kb_words = set(kb["keywords"].split())
         score = len(words.intersection(kb_words))
-        if score >= 1 and score > best_score:
+        if score >= 2 and score > best_score:
             best_score = score
             matched_kb = kb["response"]
 

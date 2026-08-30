@@ -5,7 +5,7 @@ from app.adapters.base import ProviderAdapter, ProviderResponse, NormalizedError
 from app.schemas.context import ContextPackage
 
 class GeminiAdapter(ProviderAdapter):
-    DEFAULT_MODELS = ["gemini-flash-latest", "gemini-2.5-flash", "gemini-pro-latest"]
+    DEFAULT_MODELS = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"]
 
     def validate_credentials(self, api_key: str) -> bool:
         if not api_key or len(api_key) < 10:
@@ -48,13 +48,12 @@ class GeminiAdapter(ProviderAdapter):
                             continue
 
                         # Keep only models matching -flash or -pro that support generateContent
-                        if "generateContent" in methods and ("-flash" in name or "-pro" in name or "latest" in name):
+                        if "generateContent" in methods and ("-flash" in name or "-pro" in name):
                             discovered.append(name)
 
                     if discovered:
                         sorted_models = sorted(discovered)
-                        # Force gemini-flash-latest, gemini-2.5-flash, gemini-1.5-flash, gemini-2.0-flash to top
-                        priority_order = ["gemini-flash-latest", "gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.0-flash"]
+                        priority_order = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"]
                         top_models = [m for m in priority_order if m in sorted_models]
                         other_models = [m for m in sorted_models if m not in top_models]
                         return top_models + other_models
@@ -74,21 +73,25 @@ class GeminiAdapter(ProviderAdapter):
         if context_package.relevant_files:
             file_lines = [f"- [{f.filename}] {f.content_summary}" for f in context_package.relevant_files]
             parts.append("Attached Files Context:\n" + "\n".join(file_lines))
+        web_results = context_package.metadata.get("web_results", [])
+        if web_results:
+            web_lines = [f"- [{r.get('title')}]({r.get('url')}): {r.get('snippet')}" for r in web_results]
+            parts.append("Live Web Search Results:\n" + "\n".join(web_lines))
         return "\n".join(parts)
 
     def _sanitize_model_name(self, model_name: Optional[str]) -> str:
         if not model_name:
-            return "gemini-2.5-flash"
+            return "gemini-1.5-flash"
         clean = model_name.replace("models/", "").strip()
-        # Allow any valid model string starting with "gemini-"
-        if clean.startswith("gemini-"):
+        standard_models = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash"]
+        if clean in standard_models:
             return clean
         if "pro" in clean:
-            return "gemini-2.5-pro"
-        return "gemini-2.5-flash"
+            return "gemini-1.5-pro"
+        return "gemini-1.5-flash"
 
     def generate(self, context_package: ContextPackage, api_key: str, model: Optional[str] = None) -> ProviderResponse:
-        model_name = self._sanitize_model_name(model or "gemini-2.5-flash")
+        model_name = self._sanitize_model_name(model or "gemini-1.5-flash")
 
         if not api_key:
             raise ValueError("Gemini API key is missing. Please connect your Gemini API key in Settings -> Providers.")
