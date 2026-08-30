@@ -31,7 +31,7 @@ RAG_KNOWLEDGE_BASE: List[Dict[str, str]] = [
     },
     {
         "topic": "greeting",
-        "keywords": "hi hello hey help assistance start options what can you do",
+        "keywords": "hello hey assistance start options what can you do",
         "response": """Hello! I am **SwitchAI RAG Engine** — your persistent, provider-independent AI assistant.
 
 I learn from your chat history, project goals, decisions, uploaded files, and live web search. Even when cloud API quotas are exhausted, I retain your full memory bank!
@@ -53,22 +53,12 @@ How can I assist you with your project architecture or code today?"""
 
 def query_rag_engine(db: Session, conversation_id: str, prompt: str, context_package: ContextPackage, web_results: Optional[List[Dict[str, str]]] = None) -> str:
     """
-    Learns from user chat history, memories, uploaded files, and live web search results.
+    Learns from live web search results, user chat history, memories, and uploaded files.
     """
     prompt_clean = prompt.lower().strip()
     words = set(re.findall(r'\w+', prompt_clean))
 
-    # 1. Learn from past conversation messages in this thread
-    past_messages = db.query(Message).filter(Message.conversation_id == conversation_id).order_by(Message.created_at.asc()).all()
-    
-    chat_learned_facts = []
-    for msg in past_messages[:-1]: # Exclude current prompt
-        if msg.sender_role == "assistant" and "RAG" not in msg.content:
-            sentences = [s.strip() for s in msg.content.split('\n') if len(s.strip()) > 15]
-            for s in sentences[:3]:
-                chat_learned_facts.append(s)
-
-    # 2. Gather retrieved memories & files context
+    # 1. Gather retrieved memories & files context
     memory_context_lines = []
     if context_package.user_goal:
         memory_context_lines.append(f"• Goal: {context_package.user_goal}")
@@ -77,7 +67,33 @@ def query_rag_engine(db: Session, conversation_id: str, prompt: str, context_pac
     for f in context_package.relevant_files:
         memory_context_lines.append(f"• [FILE] {f.filename}: {f.content_summary}")
 
-    # 3. Match knowledge base topic
+    header = "🌐 **[SwitchAI Live Web Search & RAG Engine]**\n*Retrieved live search results & parsed facts for your query.*\n\n"
+
+    # 2. Prioritize Live Web Search Results if present
+    if web_results and len(web_results) > 0:
+        body = f"Here are the latest live web search answers for: **\"{prompt}\"**\n\n"
+        for i, item in enumerate(web_results, 1):
+            title = item.get("title", "Web Fact").strip()
+            snippet = item.get("snippet", "").strip()
+            url = item.get("url", "#").strip()
+            body += f"### {i}. [{title}]({url})\n{snippet}\n\n"
+
+        if memory_context_lines:
+            body += "---\n### Retained Project Context:\n" + "\n".join(memory_context_lines)
+
+        return header + body
+
+    # 3. Learn from past conversation messages in this thread
+    chat_learned_facts = []
+    if db and conversation_id:
+        past_messages = db.query(Message).filter(Message.conversation_id == conversation_id).order_by(Message.created_at.asc()).all()
+        for msg in past_messages[:-1]:
+            if msg.sender_role == "assistant" and "RAG" not in msg.content:
+                sentences = [s.strip() for s in msg.content.split('\n') if len(s.strip()) > 15]
+                for s in sentences[:3]:
+                    chat_learned_facts.append(s)
+
+    # 4. Match knowledge base topic
     matched_kb: Optional[str] = None
     best_score = 0
 
@@ -88,23 +104,16 @@ def query_rag_engine(db: Session, conversation_id: str, prompt: str, context_pac
             best_score = score
             matched_kb = kb["response"]
 
-    # 4. Synthesize response
-    header = "🤖 **[SwitchAI Offline RAG Knowledge Engine]**\n*Learned from chat history, shared memory, uploaded files & live web search.*\n\n"
+    offline_header = "🤖 **[SwitchAI Offline RAG Knowledge Engine]**\n*Cloud APIs temporarily unavailable/exhausted. Generating response from local RAG Knowledge Base & Shared Memory.*\n\n"
 
     if matched_kb:
         body = matched_kb
     else:
         body = f"I analyzed your prompt: **\"{prompt}\"**.\n\n"
-        if memory_context_lines or chat_learned_facts or web_results:
-            body += "Based on what I learned from your project context and live web search, here is the relevant state:\n"
+        if memory_context_lines or chat_learned_facts:
+            body += "Based on what I learned from your project context, here is the relevant state:\n"
         else:
             body += "You can connect new provider keys in **Settings → Providers** or run a local AI server to continue cloud generation."
-
-    # Attach live web search results if present
-    if web_results:
-        body += "\n\n🌐 ### Live Web Search Insights:\n"
-        for item in web_results:
-            body += f"• **[{item.get('title', 'Web Fact')}]({item.get('url', '#')}):** {item.get('snippet', '')}\n"
 
     # Attach learned chat facts if relevant
     if chat_learned_facts and not matched_kb:
@@ -116,4 +125,4 @@ def query_rag_engine(db: Session, conversation_id: str, prompt: str, context_pac
     if memory_context_lines:
         body += "\n\n---\n### Retained Shared Memory Context:\n" + "\n".join(memory_context_lines)
 
-    return header + body
+    return offline_header + body
