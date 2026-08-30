@@ -12,6 +12,7 @@ from app.adapters.groq import GroqAdapter
 from app.adapters.mistral import MistralAdapter
 from app.adapters.cohere import CohereAdapter
 from app.adapters.local import LocalAdapter
+from app.adapters.rag import RagAdapter
 from app.schemas.provider import ProviderStatusResponse, ProviderTestResponse
 
 ADAPTERS = {
@@ -23,6 +24,7 @@ ADAPTERS = {
     "mistral": MistralAdapter(),
     "cohere": CohereAdapter(),
     "local": LocalAdapter(),
+    "rag_engine": RagAdapter(),
 }
 
 SUPPORTED_PROVIDERS = ["gemini", "openai", "anthropic", "deepseek", "groq", "mistral", "cohere", "local"]

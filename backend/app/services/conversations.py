@@ -75,6 +75,9 @@ def send_message(db: Session, user_id: str, conversation_id: str, req: MessageCr
         raise ValueError("Conversation not found")
 
     target_provider = (req.provider or conv.active_provider or "gemini").lower()
+    if target_provider == "rag_engine":
+        target_provider = "auto"
+
     routing_rationale = None
     routed_model = None
 
