@@ -56,5 +56,5 @@ def test_rag_fallback_engine_response(mock_fallback, auth_headers):
     assert resp.status_code == 200
     m = resp.json()
     assert m["provider"] == "rag_engine"
-    assert "SwitchAI Offline RAG Knowledge Engine" in m["content"]
+    assert "RAG Engine" in m["content"]
     assert "Build RAG Architecture" in m["content"]

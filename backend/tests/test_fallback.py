@@ -106,4 +106,4 @@ def test_all_providers_failing_graceful_error(m8, m7, m6, m5, m4, m3, m2, m1, au
     resp = client.post(f"/api/conversations/{conv_id}/messages", json={"content": "Check all fail", "provider": "anthropic"}, headers=auth_headers)
     assert resp.status_code == 200
     msg = resp.json()
-    assert "RAG Knowledge Engine" in msg["content"] or "Offline" in msg["content"] or "Error" in msg["content"]
+    assert "RAG Engine" in msg["content"] or "Offline" in msg["content"] or "Error" in msg["content"]

@@ -7,7 +7,7 @@ logger = logging.getLogger("switchai.search")
 
 def search_wikipedia(query: str, max_results: int = 3) -> List[Dict[str, str]]:
     """
-    Fallback 100% free search using Wikipedia REST API.
+    Fallback 100% free search using Wikipedia REST API with custom User-Agent.
     """
     try:
         url = "https://en.wikipedia.org/w/api.php"
@@ -18,7 +18,8 @@ def search_wikipedia(query: str, max_results: int = 3) -> List[Dict[str, str]]:
             "srsearch": query,
             "srlimit": max_results
         }
-        with httpx.Client(timeout=4.0) as client:
+        headers = {"User-Agent": "SwitchAI-Platform/1.0 (https://switchai.local; dev@switchai.local)"}
+        with httpx.Client(timeout=5.0, headers=headers) as client:
             res = client.get(url, params=params)
             if res.status_code == 200:
                 data = res.json()
