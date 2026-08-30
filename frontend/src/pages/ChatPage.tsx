@@ -731,7 +731,7 @@ export function ChatPage() {
                   ? 'Message in Auto Mode (Router classifies task & selects optimal model)...'
                   : `Message using ${ALL_PROVIDERS.find((p) => p.id === selectedProvider)?.name || selectedProvider}...`
               }
-              className="w-full py-3 pl-36 pr-24 rounded-xl bg-neutral-bg2 border border-border focus:border-brand focus:outline-none text-xs text-white placeholder-text-muted resize-none transition-colors"
+              className="w-full py-3 pl-[195px] pr-24 rounded-xl bg-neutral-bg2 border border-border focus:border-brand focus:outline-none text-xs text-white placeholder-text-muted resize-none transition-colors"
             />
             <button
               type="submit"
