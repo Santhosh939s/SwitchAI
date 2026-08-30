@@ -475,6 +475,14 @@ export function ChatPage() {
 
         <div className="pt-3 border-t border-border-subtle space-y-2">
           <Link
+            to="/"
+            className="w-full py-2 px-3 rounded-lg bg-white/5 hover:bg-white/10 text-text-secondary hover:text-white text-xs font-medium border border-border flex items-center justify-between transition-colors"
+          >
+            <span>🏠 Landing Page</span>
+            <span className="text-[10px] text-orange-400">Home</span>
+          </Link>
+
+          <Link
             to="/usage"
             className="w-full py-2 px-3 rounded-lg bg-white/5 hover:bg-white/10 text-text-secondary hover:text-white text-xs font-medium border border-border flex items-center justify-between transition-colors"
           >
