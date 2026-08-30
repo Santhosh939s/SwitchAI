@@ -9,6 +9,8 @@ from app.models.usage import UsageEvent
 from app.services.memory import build_context_package, extract_and_store_memories_heuristic
 from app.services.fallback import execute_with_fallback
 from app.services.providers import get_user_provider_connections, get_adapter
+from app.services.routing import route_request
+from app.services.rag import query_rag_engine
 from app.schemas.context import MessageItem
 from app.schemas.conversation import ConversationCreateRequest, ConversationUpdateRequest, MessageCreateRequest
 
@@ -17,7 +19,7 @@ def create_conversation(db: Session, user_id: str, req: ConversationCreateReques
         id=str(uuid.uuid4()),
         user_id=user_id,
         title=req.title or "New Conversation",
-        active_provider=req.active_provider or "anthropic",
+        active_provider=req.active_provider or "gemini",
         active_model=req.active_model
     )
     db.add(conv)
@@ -65,14 +67,12 @@ def get_conversation_messages(db: Session, user_id: str, conversation_id: str) -
         return []
     return db.query(Message).filter(Message.conversation_id == conversation_id).order_by(Message.created_at.asc()).all()
 
-from app.services.routing import route_request
-
 def send_message(db: Session, user_id: str, conversation_id: str, req: MessageCreateRequest) -> Message:
     conv = get_conversation(db, user_id, conversation_id)
     if not conv:
         raise ValueError("Conversation not found")
 
-    target_provider = (req.provider or conv.active_provider or "anthropic").lower()
+    target_provider = (req.provider or conv.active_provider or "gemini").lower()
     routing_rationale = None
     routed_model = None
 
@@ -89,7 +89,6 @@ def send_message(db: Session, user_id: str, conversation_id: str, req: MessageCr
 
     target_model = req.model or routed_model or conv.active_model
     
-    # If the model from DB/UI is missing or stale/unsupported, force override to a valid model
     if not target_model or target_model not in valid_models:
         if conn and conn.default_model and conn.default_model in valid_models:
             target_model = conn.default_model
@@ -122,23 +121,26 @@ def send_message(db: Session, user_id: str, conversation_id: str, req: MessageCr
         response, is_fallback, fallback_reason, orig_prov = execute_with_fallback(
             db, user_id, target_provider, context_package, model=target_model
         )
+        content = response.content
     except Exception as e:
+        # RAG Engine Fallback: Generate response from stored memory and technical knowledge base
+        rag_response = query_rag_engine(db, conversation_id, req.content, context_package)
         response = type('Response', (), {
-            'content': f"[{target_provider.upper()} Error] {str(e)}",
-            'provider': target_provider,
-            'model': target_model or "default",
-            'latency_ms': 100.0,
-            'estimated_tokens': 0
+            'content': rag_response,
+            'provider': 'rag_engine',
+            'model': 'local-knowledge-base',
+            'latency_ms': 15.0,
+            'estimated_tokens': 120
         })
+        content = response.content
         is_fallback = False
         fallback_reason = None
 
     # Prefix response with subtle fallback / routing alert header if applicable
-    content = response.content
-    if routing_rationale:
+    if routing_rationale and response.provider != 'rag_engine':
         content = f"🎯 [Auto Routed: {response.provider.upper()}]\n{routing_rationale}\n\n{content}"
     elif is_fallback:
-        content = f"⚡ [Provider Switched: {orig_prov.upper()} → {response.provider.upper()}]\nReason: {fallback_reason}\nShared context preserved: Yes\n\n{response.content}"
+        content = f"⚡ [Provider Switched: {orig_prov.upper()} → {response.provider.upper()}]\nReason: {fallback_reason}\nShared context preserved: Yes\n\n{content}"
 
     # 4. Save assistant response message
     assistant_msg = Message(
@@ -168,13 +170,13 @@ def send_message(db: Session, user_id: str, conversation_id: str, req: MessageCr
     db.add(usage_event)
 
     # 5. Automatically extract & store durable memories
-    extract_and_store_memories_heuristic(db, conversation_id, req.content, response.content)
+    extract_and_store_memories_heuristic(db, conversation_id, req.content, content)
 
     # Update conversation active state
     conv.active_provider = response.provider
     conv.active_model = response.model
     conv.updated_at = datetime.datetime.utcnow()
-    
+
     # Auto-generate clean title on 1st turn if title is default
     if conv.title in ("New Conversation", "New Chat", "") and len(req.content.strip()) > 0:
         words = req.content.strip().split()

@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import patch
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -30,7 +31,7 @@ client = TestClient(fastapi_app)
 
 @pytest.fixture
 def auth_headers():
-    reg_payload = {"email": "usage_test@example.com", "password": "TestPassword123"}
+    reg_payload = {"email": "rag_test@example.com", "password": "TestPassword123"}
     resp = client.post("/api/auth/register", json=reg_payload)
     if resp.status_code == 201:
         token = resp.json()["access_token"]
@@ -39,18 +40,21 @@ def auth_headers():
         token = resp.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
 
-def test_usage_dashboard_aggregation(auth_headers):
-    # 1. Dispatch messages to generate telemetry usage events
-    resp = client.post("/api/conversations", json={"title": "Telemetry Test"}, headers=auth_headers)
+@patch("app.services.conversations.execute_with_fallback", side_effect=RuntimeError("All cloud APIs exhausted"))
+def test_rag_fallback_engine_response(mock_fallback, auth_headers):
+    # 1. Create conversation
+    resp = client.post("/api/conversations", json={"title": "RAG Test"}, headers=auth_headers)
+    assert resp.status_code == 201
     conv_id = resp.json()["id"]
 
-    client.post(f"/api/conversations/{conv_id}/messages", json={"content": "Msg 1", "provider": "anthropic"}, headers=auth_headers)
-    client.post(f"/api/conversations/{conv_id}/messages", json={"content": "Msg 2", "provider": "gemini"}, headers=auth_headers)
+    # 2. Add shared memory item
+    mem_goal = {"category": "goal", "key": "Target Goal", "value": "Build RAG Architecture", "is_pinned": True}
+    client.post(f"/api/conversations/{conv_id}/memory", json=mem_goal, headers=auth_headers)
 
-    # 2. Query GET /api/usage
-    resp = client.get("/api/usage", headers=auth_headers)
+    # 3. Send message while all cloud APIs are failing
+    resp = client.post(f"/api/conversations/{conv_id}/messages", json={"content": "Suggest payment architecture", "provider": "gemini"}, headers=auth_headers)
     assert resp.status_code == 200
-    data = resp.json()
-    assert data["tracked_by"] == "SwitchAI Internal Telemetry"
-    assert data["total_requests"] >= 2
-    assert len(data["providers"]) == 8
+    m = resp.json()
+    assert m["provider"] == "rag_engine"
+    assert "SwitchAI Offline RAG Knowledge Engine" in m["content"]
+    assert "Build RAG Architecture" in m["content"]
