@@ -55,6 +55,7 @@ class AnthropicAdapter(ProviderAdapter):
         if web_results:
             web_lines = [f"- [{r.get('title')}]({r.get('url')}): {r.get('snippet')}" for r in web_results]
             parts.append("Live Web Search Results:\n" + "\n".join(web_lines))
+        parts.append("\n[System Instruction: Be concise, clear, and token-efficient. Provide direct answers without unnecessary fluff or huge walls of text unless the user explicitly asks to 'explain in detail' or 'explain briefly'.]")
         return "\n".join(parts)
 
     def _sanitize_model_name(self, model_name: Optional[str]) -> str:

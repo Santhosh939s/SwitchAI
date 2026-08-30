@@ -73,9 +73,10 @@ RAG_KNOWLEDGE_BASE: List[Dict[str, str]] = [
     {"topic": "general_knowledge", "keywords": "general knowledge encyclopedic facts reference information trivias standards world facts", "response": "General knowledge represents a broad collection of verified factual information across diverse human disciplines, history, geography, science, culture, and foundational concepts."}
 ]
 
-def query_rag_engine(db: Session, conversation_id: str, prompt: str, context_package: ContextPackage, web_results: Optional[List[Dict[str, str]]] = None) -> str:
+def query_rag_engine(db: Session, conversation_id: str, prompt: str, context_package: ContextPackage, web_results: Optional[List[Dict[str, str]]] = None) -> Tuple[str, bool]:
     """
     Learns from live web search results, user chat history, memories, uploaded files, and 28-domain RAG dataset.
+    Returns (response_text, is_direct_match).
     """
     prompt_clean = prompt.lower().strip()
     words = set(re.findall(r'\w+', prompt_clean))
@@ -96,13 +97,9 @@ def query_rag_engine(db: Session, conversation_id: str, prompt: str, context_pac
     for f in context_package.relevant_files:
         memory_context_lines.append(f"• [FILE] {f.filename}: {f.content_summary}")
 
-    # 2. Prioritize Live Web Search Results if present, or auto-fetch if empty and prompt needs current info
-    if not web_results:
-        from app.services.search import search_web_ddg
-        web_results = search_web_ddg(prompt, max_results=3)
-
+    # 2. Prioritize Live Web Search Results if present
     if web_results and len(web_results) > 0:
-        header = "🌐 **[SwitchAI Live Web Search & RAG Engine]**\n*Retrieved live search results & parsed facts for your query.*\n\n"
+        header = "🌐 **[SwitchAI Live Web Search & RAG Knowledge Engine]**\n*Retrieved live search results & parsed facts for your query.*\n\n"
         body = f"Here are the latest live web search answers for: **\"{prompt}\"**\n\n"
         for i, item in enumerate(web_results, 1):
             title = item.get("title", "Web Fact").strip()
@@ -113,9 +110,9 @@ def query_rag_engine(db: Session, conversation_id: str, prompt: str, context_pac
         if memory_context_lines:
             body += "---\n### Retained Project Context:\n" + "\n".join(memory_context_lines)
 
-        return header + body
+        return (header + body, True)
 
-    # 3. Learn from past conversation messages (Filter out error logs)
+    # 3. Learn from past conversation messages
     chat_learned_facts = []
     if db and conversation_id:
         past_messages = db.query(Message).filter(Message.conversation_id == conversation_id).order_by(Message.created_at.asc()).all()
@@ -137,19 +134,22 @@ def query_rag_engine(db: Session, conversation_id: str, prompt: str, context_pac
             best_score = score
             matched_kb = kb["response"]
 
-    offline_header = "🤖 **[SwitchAI Offline RAG Knowledge Engine]**\n*Cloud APIs temporarily unavailable/exhausted. Generating response from local RAG Knowledge Base & Shared Memory.*\n\n"
+    offline_header = "🤖 **[SwitchAI RAG Knowledge Engine]**\n*Retrieved answer directly from local RAG Knowledge Base & Shared Memory (0 cloud token cost).*\n\n"
 
     if matched_kb:
         body = matched_kb
+        if memory_context_lines:
+            body += "\n\n---\n### Retained Shared Memory Context:\n" + "\n".join(memory_context_lines)
+        return (offline_header + body, True)
+
+    body = f"### Response for: **\"{prompt}\"**\n\n"
+    if memory_context_lines or chat_learned_facts:
+        body += "Based on what I learned from your project context and chat history:\n"
     else:
-        body = f"### Response for: **\"{prompt}\"**\n\n"
-        if memory_context_lines or chat_learned_facts:
-            body += "Based on what I learned from your project context and chat history:\n"
-        else:
-            body += "I received your query. You can connect new provider API keys in **Settings → Providers** or run a local AI server to resume full LLM generation.\n"
+        body += "I received your query. You can connect new provider API keys in **Settings → Providers** or run a local AI server to resume full LLM generation.\n"
 
     # Attach learned chat facts if relevant
-    if chat_learned_facts and not matched_kb:
+    if chat_learned_facts:
         body += "\n### Learned Chat History Insights:\n"
         for fact in chat_learned_facts[:3]:
             body += f"> {fact}\n"
@@ -158,4 +158,4 @@ def query_rag_engine(db: Session, conversation_id: str, prompt: str, context_pac
     if memory_context_lines:
         body += "\n---\n### Retained Shared Memory Context:\n" + "\n".join(memory_context_lines)
 
-    return offline_header + body
+    return (offline_header + body, False)

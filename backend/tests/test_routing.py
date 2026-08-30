@@ -74,4 +74,4 @@ def test_auto_routing_message_dispatch(auth_headers):
     assert resp.status_code == 200
     res = resp.json()
     assert res["provider"] in ("gemini", "rag_engine")
-    assert "Auto Routed" in res["content"] or "RAG Engine" in res["content"]
+    assert "Auto Routed" in res["content"] or "RAG Knowledge Engine" in res["content"]

@@ -100,15 +100,13 @@ def send_message(db: Session, user_id: str, conversation_id: str, req: MessageCr
         else:
             target_model = valid_models[0]
 
-    # Check for Web Search Trigger
-    web_keywords = ["latest", "today", "news", "current", "who is", "what is", "search"]
-    should_search_web = bool(req.web_search_enabled) or any(k in req.content.lower() for k in web_keywords)
+    # Check for Web Search Trigger (strictly enabled via toggle button)
+    should_search_web = bool(req.web_search_enabled)
     
     web_results = []
     if should_search_web:
         web_results = search_web_ddg(req.content, max_results=3)
         if web_results:
-            # Store search snippets as durable FACT memories in SQLite
             search_summary = "; ".join([f"{r.get('title')}: {r.get('snippet')}" for r in web_results[:2]])
             create_memory(db, conversation_id, MemoryCreateRequest(
                 category="fact",
@@ -141,25 +139,39 @@ def send_message(db: Session, user_id: str, conversation_id: str, req: MessageCr
     ]
     context_package.recent_messages = message_items
 
-    # 3. Execute with resilient fallback
-    try:
-        response, is_fallback, fallback_reason, orig_prov = execute_with_fallback(
-            db, user_id, target_provider, context_package, model=target_model
-        )
-        content = response.content
-    except Exception as e:
-        # RAG Engine Fallback: Generate response from stored memory, files, and web search results
-        rag_response = query_rag_engine(db, conversation_id, req.content, context_package, web_results=web_results)
+    # 3. RAG-First Lookup (Zero Token Waste): Check local RAG & Shared Memory before calling Cloud APIs
+    rag_text, is_direct_match = query_rag_engine(db, conversation_id, req.content, context_package, web_results=web_results)
+    
+    # If RAG has a direct grounded topic/web match and user did not explicitly force a specific cloud model
+    if is_direct_match and not req.provider and target_provider != "local":
         response = type('Response', (), {
-            'content': rag_response,
+            'content': rag_text,
             'provider': 'rag_engine',
             'model': 'local-knowledge-base',
-            'latency_ms': 15.0,
-            'estimated_tokens': 120
+            'latency_ms': 12.0,
+            'estimated_tokens': 0
         })
         content = response.content
         is_fallback = False
         fallback_reason = None
+    else:
+        try:
+            response, is_fallback, fallback_reason, orig_prov = execute_with_fallback(
+                db, user_id, target_provider, context_package, model=target_model
+            )
+            content = response.content
+        except Exception as e:
+            # RAG Engine Fallback when cloud APIs fail/exhausted
+            response = type('Response', (), {
+                'content': rag_text,
+                'provider': 'rag_engine',
+                'model': 'local-knowledge-base',
+                'latency_ms': 15.0,
+                'estimated_tokens': 0
+            })
+            content = response.content
+            is_fallback = False
+            fallback_reason = None
 
     # Prefix response with subtle fallback / routing alert header if applicable
     if routing_rationale and response.provider != 'rag_engine':
