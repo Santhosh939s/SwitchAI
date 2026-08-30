@@ -43,3 +43,4 @@ class MessageCreateRequest(BaseModel):
     content: str = Field(..., min_length=1)
     provider: Optional[str] = None
     model: Optional[str] = None
+    web_search_enabled: Optional[bool] = False

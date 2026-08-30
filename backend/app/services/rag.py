@@ -34,7 +34,7 @@ RAG_KNOWLEDGE_BASE: List[Dict[str, str]] = [
         "keywords": "hi hello hey help assistance start options what can you do",
         "response": """Hello! I am **SwitchAI RAG Engine** — your persistent, provider-independent AI assistant.
 
-I learn from your chat history, project goals, decisions, and uploaded files. Even when cloud API quotas are exhausted, I retain your full memory bank!
+I learn from your chat history, project goals, decisions, uploaded files, and live web search. Even when cloud API quotas are exhausted, I retain your full memory bank!
 
 How can I assist you with your project architecture or code today?"""
     },
@@ -51,9 +51,9 @@ How can I assist you with your project architecture or code today?"""
     }
 ]
 
-def query_rag_engine(db: Session, conversation_id: str, prompt: str, context_package: ContextPackage) -> str:
+def query_rag_engine(db: Session, conversation_id: str, prompt: str, context_package: ContextPackage, web_results: Optional[List[Dict[str, str]]] = None) -> str:
     """
-    Learns from user chat history, memories, and uploaded files to answer prompts contextually.
+    Learns from user chat history, memories, uploaded files, and live web search results.
     """
     prompt_clean = prompt.lower().strip()
     words = set(re.findall(r'\w+', prompt_clean))
@@ -64,7 +64,6 @@ def query_rag_engine(db: Session, conversation_id: str, prompt: str, context_pac
     chat_learned_facts = []
     for msg in past_messages[:-1]: # Exclude current prompt
         if msg.sender_role == "assistant" and "RAG" not in msg.content:
-            # Learn key sentences from assistant answers
             sentences = [s.strip() for s in msg.content.split('\n') if len(s.strip()) > 15]
             for s in sentences[:3]:
                 chat_learned_facts.append(s)
@@ -90,16 +89,22 @@ def query_rag_engine(db: Session, conversation_id: str, prompt: str, context_pac
             matched_kb = kb["response"]
 
     # 4. Synthesize response
-    header = "🤖 **[SwitchAI Offline RAG Knowledge Engine]**\n*Learned from your chat history, shared memory & technical knowledge base.*\n\n"
+    header = "🤖 **[SwitchAI Offline RAG Knowledge Engine]**\n*Learned from chat history, shared memory, uploaded files & live web search.*\n\n"
 
     if matched_kb:
         body = matched_kb
     else:
         body = f"I analyzed your prompt: **\"{prompt}\"**.\n\n"
-        if memory_context_lines or chat_learned_facts:
-            body += "Based on what I learned from your previous chat messages and shared memory, here is the relevant project state:\n"
+        if memory_context_lines or chat_learned_facts or web_results:
+            body += "Based on what I learned from your project context and live web search, here is the relevant state:\n"
         else:
             body += "You can connect new provider keys in **Settings → Providers** or run a local AI server to continue cloud generation."
+
+    # Attach live web search results if present
+    if web_results:
+        body += "\n\n🌐 ### Live Web Search Insights:\n"
+        for item in web_results:
+            body += f"• **[{item.get('title', 'Web Fact')}]({item.get('url', '#')}):** {item.get('snippet', '')}\n"
 
     # Attach learned chat facts if relevant
     if chat_learned_facts and not matched_kb:

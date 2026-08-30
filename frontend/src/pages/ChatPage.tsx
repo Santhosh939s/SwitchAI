@@ -78,6 +78,7 @@ export function ChatPage() {
   const [providerStatuses, setProviderStatuses] = useState<ProviderStatus[]>([]);
   const [connectedProviders, setConnectedProviders] = useState<string[]>([]);
   const [input, setInput] = useState('');
+  const [webSearchEnabled, setWebSearchEnabled] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<string>('auto');
   const [selectedModel, setSelectedModel] = useState<string>('');
   const [routingPriority, setRoutingPriority] = useState<string>('balanced');
@@ -279,7 +280,7 @@ export function ChatPage() {
     setMessages((prev) => [...prev, tempUserMsg]);
 
     try {
-      const assistantMsg = await sendMessage(conv.id, currentText, selectedProvider, selectedModel || undefined);
+      const assistantMsg = await sendMessage(conv.id, currentText, selectedProvider, selectedModel || undefined, webSearchEnabled);
       setMessages((prev) => [...prev.filter((m) => !m.id.startsWith('temp-')), tempUserMsg, assistantMsg]);
       await loadConversations(searchQuery);
       await loadPassport(conv.id);
@@ -675,15 +676,31 @@ export function ChatPage() {
               className="hidden"
               accept=".txt,.md,.json,.csv"
             />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={fileUploading}
-              title="Attach File Context (.txt, .md, .json, .csv)"
-              className="absolute left-2.5 z-10 p-1.5 rounded-lg text-text-muted hover:text-white hover:bg-white/10 transition-colors"
-            >
-              {fileUploading ? '⏳' : '📎'}
-            </button>
+            <div className="absolute left-2.5 z-10 flex items-center space-x-1">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={fileUploading}
+                title="Attach File Context (.txt, .md, .json, .csv)"
+                className="p-1.5 rounded-lg text-text-muted hover:text-white hover:bg-white/10 transition-colors"
+              >
+                {fileUploading ? '⏳' : '📎'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setWebSearchEnabled(!webSearchEnabled)}
+                className={`px-2 py-1 rounded-lg text-xs font-medium border transition-colors flex items-center space-x-1 ${
+                  webSearchEnabled
+                    ? 'bg-blue-500/20 text-blue-300 border-blue-500/40'
+                    : 'bg-white/5 text-text-muted border-border hover:text-white'
+                }`}
+                title="Toggle 100% Free Live Web Search (DuckDuckGo)"
+              >
+                <span>🌐</span>
+                <span className={`w-1.5 h-1.5 rounded-full ${webSearchEnabled ? 'bg-blue-400 animate-pulse' : 'bg-gray-500'}`} />
+              </button>
+            </div>
 
             <textarea
               rows={1}
@@ -700,7 +717,7 @@ export function ChatPage() {
                   ? 'Message in Auto Mode (Router classifies task & selects optimal model)...'
                   : `Message using ${ALL_PROVIDERS.find((p) => p.id === selectedProvider)?.name || selectedProvider}...`
               }
-              className="w-full py-3 pl-10 pr-24 rounded-xl bg-neutral-bg2 border border-border focus:border-brand focus:outline-none text-xs text-white placeholder-text-muted resize-none transition-colors"
+              className="w-full py-3 pl-20 pr-24 rounded-xl bg-neutral-bg2 border border-border focus:border-brand focus:outline-none text-xs text-white placeholder-text-muted resize-none transition-colors"
             />
             <button
               type="submit"
