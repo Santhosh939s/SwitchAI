@@ -10,7 +10,7 @@
 | **Project Name** | **SwitchAI** |
 | **Core Tagline** | *"One memory. Many AI models."* |
 | **Harness / Framework** | Built with **LatentCode** AI Coding Harness & SkillPatch Agent Skills |
-| **Repository** | [GitHub: Santhosh939s/Switch-AI-LatentForce](https://github.com/Santhosh939s/Switch-AI-LatentForce) |
+| **Repository** | [GitHub: Santhosh939s/SwitchAI](https://github.com/Santhosh939s/SwitchAI) |
 | **Backend Stack** | Python 3.8+, FastAPI, SQLAlchemy ORM, SQLite, Pydantic v2, Pytest, Fernet Encryption |
 | **Frontend Stack** | React 18, TypeScript, Vite, Tailwind CSS, Lucide Icons, Framer Motion |
 | **Theme / Aesthetic** | **LatentForce Cyber-Flame** (Flame Orange `#EE5622`, Obsidian `#0A0A0B`, Glassmorphism) |
