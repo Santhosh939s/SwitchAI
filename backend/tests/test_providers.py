@@ -44,7 +44,7 @@ def test_get_providers_initial_status(auth_headers):
     resp = client.get("/api/providers", headers=auth_headers)
     assert resp.status_code == 200
     providers = resp.json()
-    assert len(providers) == 7
+    assert len(providers) == 8
     provider_names = [p["provider"] for p in providers]
     assert "anthropic" in provider_names
     assert "gemini" in provider_names

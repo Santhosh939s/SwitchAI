@@ -11,6 +11,7 @@ from app.adapters.deepseek import DeepSeekAdapter
 from app.adapters.groq import GroqAdapter
 from app.adapters.mistral import MistralAdapter
 from app.adapters.cohere import CohereAdapter
+from app.adapters.ollama import OllamaAdapter
 from app.adapters.rag import RagAdapter
 from app.schemas.provider import ProviderStatusResponse, ProviderTestResponse
 
@@ -22,10 +23,11 @@ ADAPTERS = {
     "groq": GroqAdapter(),
     "mistral": MistralAdapter(),
     "cohere": CohereAdapter(),
+    "ollama": OllamaAdapter(),
     "rag_engine": RagAdapter(),
 }
 
-SUPPORTED_PROVIDERS = ["gemini", "openai", "anthropic", "deepseek", "groq", "mistral", "cohere"]
+SUPPORTED_PROVIDERS = ["gemini", "openai", "anthropic", "deepseek", "groq", "mistral", "cohere", "ollama"]
 
 def get_adapter(provider: str):
     p = provider.lower()

@@ -3,7 +3,7 @@
 > **BuildSprint 2026 Project by LatentForce**  
 > Built exclusively using **LatentCode** AI coding harness and enhanced with SkillPatch agent skills.
 
-SwitchAI decouples AI conversation state and memory from model providers. The user maintains **ONE** shared memory system across 7 Cloud AI Providers (Google Gemini, OpenAI GPT, Anthropic Claude, DeepSeek, Groq LPU, Mistral AI, Cohere).
+SwitchAI decouples AI conversation state and memory from model providers. The user maintains **ONE** shared memory system across 8 AI Providers (Google Gemini, OpenAI GPT, Anthropic Claude, DeepSeek, Groq LPU, Mistral AI, Cohere, and Local Ollama).
 
 ---
 
@@ -92,7 +92,7 @@ npm run build
 
 1. **Landing Page:** Open `http://localhost:5173` → Click "Start chatting".
 2. **Signup / Login:** Create a new SwitchAI account at `/signup`.
-3. **Connect Providers:** Navigate to `/settings/providers` → Connect Gemini, OpenAI, DeepSeek, or Anthropic keys.
+3. **Connect Providers:** Navigate to `/settings/providers` → Connect Gemini, OpenAI, DeepSeek, Anthropic keys, or link your local Ollama server (`http://localhost:11434`).
 4. **Start Chat:** Navigate to `/chat` → Type: *"I am building a college food delivery app using FastAPI, PostgreSQL, and React."*
 5. **Shared Memory Inspection:** Click "🧠 Shared Memory" → Verify extracted goals, tech stack facts, and architectural decisions.
 6. **User Profile Settings:** Click your avatar badge in the bottom-left sidebar → Update your display name and email address.

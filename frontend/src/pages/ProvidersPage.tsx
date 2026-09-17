@@ -53,6 +53,11 @@ const PROVIDER_METADATA: Record<string, { title: string; desc: string; iconBg: s
     desc: 'Command R+ models optimized for enterprise RAG and structured output.',
     iconBg: 'bg-teal-500/20 text-teal-400 border-teal-500/30',
   },
+  ollama: {
+    title: 'Ollama (Local)',
+    desc: 'Run Llama 3, Phi-3, and Mistral models locally with zero API costs.',
+    iconBg: 'bg-rose-500/20 text-rose-400 border-rose-500/30',
+  },
 };
 
 export function ProvidersPage() {
@@ -274,13 +279,18 @@ export function ProvidersPage() {
                     <div>
                       {isInputActive ? (
                         <div className="space-y-2">
-                          <input
-                            type="password"
-                            placeholder={`Enter ${meta.title} API key`}
-                            value={apiKeyInput}
-                            onChange={(e) => setApiKeyInput(e.target.value)}
-                            className="w-full px-3 py-2 rounded-lg bg-neutral-bg2 border border-border focus:border-brand text-xs text-white placeholder-text-muted focus:outline-none"
-                          />
+                          <div className="flex flex-col gap-2">
+                            <label className="text-sm font-medium text-zinc-400">
+                              {p.provider === 'ollama' ? 'Ollama Server URL' : 'API Key'}
+                            </label>
+                            <input
+                              type={p.provider === 'ollama' ? 'url' : 'password'}
+                              placeholder={p.provider === 'ollama' ? 'http://localhost:11434' : 'Enter your API key here...'}
+                              value={apiKeyInput}
+                              onChange={(e) => setApiKeyInput(e.target.value)}
+                              className="w-full px-3 py-2 rounded-lg bg-neutral-bg2 border border-border focus:border-brand text-xs text-white placeholder-text-muted focus:outline-none"
+                            />
+                          </div>
                           <div className="flex space-x-2">
                             <button
                               onClick={() => handleConnect(p.provider)}

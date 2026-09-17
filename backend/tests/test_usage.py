@@ -53,4 +53,4 @@ def test_usage_dashboard_aggregation(auth_headers):
     data = resp.json()
     assert data["tracked_by"] == "SwitchAI Internal Telemetry"
     assert data["total_requests"] >= 2
-    assert len(data["providers"]) == 7
+    assert len(data["providers"]) == 8
